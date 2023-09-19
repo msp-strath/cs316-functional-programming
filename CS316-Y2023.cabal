@@ -1,0 +1,63 @@
+name:                CS316-Y2023
+version:             0.1.0.1
+-- synopsis:
+-- description:
+homepage:            https://github.com/bobatkey/CS316-Y2022#readme
+license:             BSD3
+license-file:        LICENSE
+author:              Robert Atkey
+maintainer:          robert.atkey@strath.ac.uk
+copyright:           BSD3
+category:            Education
+build-type:          Simple
+cabal-version:       >=1.10
+extra-source-files:  README.md
+
+-- executable hello-cs316
+--   hs-source-dirs:      src
+--   main-is:             Main.hs
+--   default-language:    Haskell2010
+--   build-depends:       base >= 4.7 && < 5
+
+library
+  hs-source-dirs:      lecture-notes
+  exposed-modules:     Week01,
+--                       Week01Intro,
+--                       Week01Intro02,
+                       Week01Problems,
+--                       Week01Solutions,
+                       Week02,
+--                       Week02Intro,
+--                       Week02Problems,
+--                       Week02Solutions,
+                       Week03,
+--                       Week03Intro01,
+--                       Week03Problems,
+--                       Week03Solutions,
+                       Week04,
+--                       Week04Intro,
+--                       Week04Problems,
+--                       Week04Solutions,
+                       Week05,
+--                       Week05Intro,
+--                       Week05Problems,
+--                       Week05Solutions,
+                       Week06,
+--                       Week06Intro,
+--                       Week06Problems,
+--                       Week06Solutions,
+                       Week07,
+--                       Week07Intro,
+--                       Week07Problems,
+--                       Week07Solutions,
+                       Week08,
+--                       Week08Intro,
+--                       Week08Problems,
+--                       Week08Solutions,
+                       Week09,
+--                       Week09Intro,
+                       Week10
+  default-language:    Haskell2010
+  build-depends:       base >= 4.7 && < 5,
+                       split >= 0.2.3.3,
+                       HTTP >= 4000.3.14
