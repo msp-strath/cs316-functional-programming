@@ -42,16 +42,16 @@ The notes are Haskell files with interleaved code and commentary. You are encour
 
 - [Week 1](lecture-notes/Week01.hs) : Data and Functions
   - [Tutorial Problems](lecture-notes/Week01Problems.hs)
-<!--   - [Tutorial Solutions](lecture-notes/Week01Solutions.hs)
+  - [Tutorial Solutions](lecture-notes/Week01Solutions.hs)
   - [Live Lecture notes (Tuesday)](lecture-notes/Week01Intro.hs)
-  - [Live Lecture notes (Friday)](lecture-notes/Week01Intro02.hs)  -->
+<!--  - [Live Lecture notes (Friday)](lecture-notes/Week01Intro02.hs)  -->
 - [Week 2](lecture-notes/Week02.hs) : Solving Problems by Recusion
-<!--  - [Tutorial Problems](lecture-notes/Week02Problems.hs)
+  - [Tutorial Problems](lecture-notes/Week02Problems.hs)
   - [Tutorial Solutions](lecture-notes/Week02Solution.hs)
-  - [Live Lecture Notes (Friday)](lecture-notes/Week02Intro.hs).  -->
+<!--  - [Live Lecture Notes (Friday)](lecture-notes/Week02Intro.hs).  -->
 - [Week 3](lecture-notes/Week03.hs) : Higher Order Functions
-<!--   - [Tutorial Problems](lecture-notes/Week03Problems.hs)
-  - [Tutorial Solutions](lecture-notes/Week03Solutions.hs)
+  - [Tutorial Problems](lecture-notes/Week03Problems.hs)
+<!--  - [Tutorial Solutions](lecture-notes/Week03Solutions.hs)
   - [Live Lecture Notes](lecture-notes/Week03Intro01.hs)  -->
 - [Week 4](lecture-notes/Week04.hs) : Patterns of Recursion
 <!--  - [Tutorial Problems](lecture-notes/Week04Problems.hs)
