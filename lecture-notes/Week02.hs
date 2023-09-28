@@ -767,3 +767,104 @@ makeChange (coin:coins) used amount
        *Week02> makeChange [50,20,20,11,2,1] [] 54
        Just [1,2,11,20,20]
 -}
+
+{- It can be a little difficult to understand how case expressions work
+   at first, especially in recursive programs like this one. As above,
+   writing out the steps involved goes a long way to demystifying what
+   is going on.
+
+   As a small example, we'll try to split 10 using a 1 and a 10. We
+   start out like this:
+
+   ```haskell
+     makeChange [1,10] [] 10
+   ```
+
+   Since `10 >= 1`, we execute the first branch of the last part of
+   the definition:
+
+   ```haskell
+     case makeChange [10] [1] 9 of
+       Just coins -> Just coins
+       Nothing    -> makeChange [10] [] 10
+   ```
+
+   At a high-level what is going on here is that we have to execute
+   `makeChange [10] [1] 9` to see if that works, if it does then
+   great: we return the result; if it doesn't then we try something
+   else. Note that the branches of the case are "waiting" for the
+   result to come back to work out what to do. In this sense the
+   "state" of the search is saved, waiting to see whether the second
+   option is needed.
+
+   At a low(er)-level we need work out what the thing we are `case`ing
+   on evaluates to so we know which branch of the case to do. So we
+   try to resolve `makeChange [10] [1] 9`. Because `9 >= 10` is not
+   true, we go to the last part of the definition, and so `makeChange
+   [10] [1] 9` becomes `makeChange [] [1] 9`:
+
+   ```haskell
+     case makeChange [] [1] 9 of
+       Just coins -> Just coins
+       Nothing    -> makeChange [10] [] 10
+   ```
+
+   We still need to do more work to get the thing we are `case`ing on
+   down to a value. Now `makeChange [] [1] 9` matches the second line
+   of the definition, which says it is equal to `Nothing` (because
+   choosing the use `1` was the "wrong" choice). Updating the `case`ee
+   expression gives:
+
+   ```haskell
+     case Nothing of
+       Just coins -> Just coins
+       Nothing    -> makeChange [10] [] 10
+   ```
+
+   Now the `case` has a value it can use to choose which branch to
+   take, so it takes the `Nothing` branch, to try the alternative
+   where we didn't use `1`:
+
+   ```haskell
+     makeChange [10] [] 10
+   ```
+
+   Now the program matches the first branch of the last part of the
+   definition again, because `10 >= 10`. So it becomes a `case`
+   expression again:
+
+   ```haskell
+     case makeChange [] [10] 0 of
+       Just coins -> Just coins
+       Nothing    -> makeChange [] [] 10
+   ```
+
+   Executing the `makeChange [] [10] 0` matches the first line of the
+   definition (because the amount is now `0`), so it gets replaced by
+   `Just [10]`:
+
+   ```haskell
+     case (Just [10]) of
+       Just coins -> Just coins
+       Nothing    -> makeChange [] [] 10
+   ```
+
+   Finally, the `case` now knows which branch to take because it can
+   see a `Just`. In this branch `coins` becomes `[10]`, and we get the
+   answer:
+
+   ```haskell
+     Just [10]
+   ```
+
+   `case` acts as a decision point that the program remembers as it
+   tries things out. In a more complex example (with more than two
+   coins), we'd end up with many case expressions, all nested inside
+   each other, representing other possible routes to take.
+
+   (The Haskell compiler doesn't really work like I've written it
+   above; but Haskell is designed so that you can't tell the
+   difference between what it really does and the rewriting steps I
+   wrote out above, except that what it really does is more
+   efficient.)
+-}
