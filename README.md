@@ -47,7 +47,7 @@ The notes are Haskell files with interleaved code and commentary. You are encour
 <!--  - [Live Lecture notes (Friday)](lecture-notes/Week01Intro02.hs)  -->
 - [Week 2](lecture-notes/Week02.hs) : Solving Problems by Recusion
   - [Tutorial Problems](lecture-notes/Week02Problems.hs)
-  - [Tutorial Solutions](lecture-notes/Week02Solution.hs)
+  - [Tutorial Solutions](lecture-notes/Week02Solutions.hs)
 <!--  - [Live Lecture Notes (Friday)](lecture-notes/Week02Intro.hs).  -->
 - [Week 3](lecture-notes/Week03.hs) : Higher Order Functions
   - [Tutorial Problems](lecture-notes/Week03Problems.hs)
