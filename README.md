@@ -44,35 +44,27 @@ The notes are Haskell files with interleaved code and commentary. You are encour
   - [Tutorial Problems](lecture-notes/Week01Problems.hs)
   - [Tutorial Solutions](lecture-notes/Week01Solutions.hs)
   - [Live Lecture notes (Tuesday)](lecture-notes/Week01Intro.hs)
-<!--  - [Live Lecture notes (Friday)](lecture-notes/Week01Intro02.hs)  -->
 - [Week 2](lecture-notes/Week02.hs) : Solving Problems by Recusion
   - [Tutorial Problems](lecture-notes/Week02Problems.hs)
   - [Tutorial Solutions](lecture-notes/Week02Solutions.hs)
-<!--  - [Live Lecture Notes (Friday)](lecture-notes/Week02Intro.hs).  -->
 - [Week 3](lecture-notes/Week03.hs) : Higher Order Functions
   - [Tutorial Problems](lecture-notes/Week03Problems.hs)
-<!--  - [Tutorial Solutions](lecture-notes/Week03Solutions.hs)
-  - [Live Lecture Notes](lecture-notes/Week03Intro01.hs)  -->
+  - [Tutorial Solutions](lecture-notes/Week03Solutions.hs)
 - [Week 4](lecture-notes/Week04.hs) : Patterns of Recursion
 <!--  - [Tutorial Problems](lecture-notes/Week04Problems.hs)
-  - [Tutorial Solutions](lecture-notes/Week04Solutions.hs)
-  - [Live Lecture Notes (Tuesday)](lecture-notes/Week04Intro.hs)  -->
+  - [Tutorial Solutions](lecture-notes/Week04Solutions.hs) --->
 - [Week 5](lecture-notes/Week05.hs) : Classes of Types
 <!--  - [Tutorial Problems](lecture-notes/Week05Problems.hs)
-  - [Tutorial Solutions](lecture-notes/Week05Solutions.hs)
-  - [Live Lecture Notes](lecture-notes/Week05Intro.hs) -->
+  - [Tutorial Solutions](lecture-notes/Week05Solutions.hs) -->
 - [Week 6](lecture-notes/Week06.hs) : Simulating side-effects: Exceptions, State, and Printing
 <!--  - [Tutorial Problems](lecture-notes/Week06Problems.hs)
-  - [Tutorial Solutions](lecture-notes/Week06Solutions.hs)
-  - [Live Lecture Notes](lecture-notes/Week06Intro.hs) -->
+  - [Tutorial Solutions](lecture-notes/Week06Solutions.hs) -->
 - [Week 7](lecture-notes/Week07.hs) : Monads
 <!--  - [Tutorial Problems](lecture-notes/Week07Problems.hs)
-  - [Tutorial Solutions](lecture-notes/Week07Solutions.hs)
-  - [Live Lecture Notes](lecture-notes/Week07Intro.hs) -->
+  - [Tutorial Solutions](lecture-notes/Week07Solutions.hs) -->
 - [Week 8](lecture-notes/Week08.hs) : Real I/O and Parser Combinators
 <!--   - [Tutorial Problems](lecture-notes/Week08Problems.hs)
-  - [Tutorial Solutions](lecture-notes/Week08Solutions.hs)
-  - [Live Lecture Notes](lecture-notes/Week08Intro.hs) -->
+  - [Tutorial Solutions](lecture-notes/Week08Solutions.hs) -->
 - [Week 9](lecture-notes/Week09.hs) : Data Dependencies and Applicative Functors
 <!--   - [Live Lecture Notes](lecture-notes/Week09Intro.hs) -->
 - [Week 10](lecture-notes/Week10.hs) : Lazy Evaluation and Infinite Data
