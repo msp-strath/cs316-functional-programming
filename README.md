@@ -52,7 +52,7 @@ The notes are Haskell files with interleaved code and commentary. You are encour
   - [Tutorial Solutions](lecture-notes/Week03Solutions.hs)
 - [Week 4](lecture-notes/Week04.hs) : Patterns of Recursion
   - [Tutorial Problems](lecture-notes/Week04Problems.hs)
-<!--  - [Tutorial Solutions](lecture-notes/Week04Solutions.hs) --->
+  - [Tutorial Solutions](lecture-notes/Week04Solutions.hs)
 - [Week 5](lecture-notes/Week05.hs) : Classes of Types
   - [Tutorial Problems](lecture-notes/Week05Problems.hs)
 <!--  - [Tutorial Solutions](lecture-notes/Week05Solutions.hs) -->
