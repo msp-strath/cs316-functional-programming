@@ -29,7 +29,7 @@ import Data.Char
 
 -- Giving things names
 data Direction = Up | Down | Left | Right
-data Tree a = Leaf | Node (Tree a) a (Tree a)
+-- data Tree a = Leaf | Node (Tree a) a (Tree a)
 
 type Transformation = Direction -> Direction
 
@@ -168,10 +168,196 @@ parseRecord record =
         Just id -> Just (username, id)
 
 
+-- REMINDER:
+--
+--   *** CLASS TEST ***
+--
+--  12:00 noon Wednesday 25th Oct to 12:00 noon Thursday 26th Oct
+--
+--      Covering weeks 1-5.
+--      Worth 50% of course mark
+--      Redemption test in Week 9
+
+
+
+
 -- 4. Type classes
 
 -- Eq, Show, Ord
 
 
+--   ==  : String -> String -> Bool
+--       : Int -> Int -> Bool
+--       : Double -> Double -> Bool
+--       : Bool -> Bool -> Bool
+--       : List String -> List String -> Bool
+--  ===      (type and value comparison in JavaScript)
+--
+--   +  : Int -> Int -> Int
+--      : Double -> Double -> Double
+--      : BigInteger -> BigInteger -> BigInteger
+
+-- boolean equals(Object o)
+-- String toString()
+
+--  x.toString()
+
+-- eqString
+-- eqInt
+-- eqDouble
+-- eqBool
+
+-- addInt
+-- addDouble
+-- addBigInteger
+
+-- class Eq a where
+
+data Tree a
+  = Leaf
+  | Node (Tree a) a (Tree a)
+--  deriving (Eq)
+
+{-
+class Eq a where
+  (==) :: a -> a -> Bool
+-}
+
+instance Eq (Tree a) where
+  (==) Leaf Leaf = True
+  (==) (Node l1 _ r1) (Node l2 _ r2) = l1 == l2 && r1 == r2
+  (==) _ _ = False
+
+{-
+class Show a where
+  show :: a -> String
+-}
+
+instance Show (Tree a) where
+  show Leaf = "Leaf"
+  show (Node l _ r) = "(Node " ++ show l ++ " _ " ++ show r ++ ")"
+
+
+{- Type classes:
+
+   - define a common interface that can be implemented by many types
+
+   - For example:
+       - Eq    for equality testing
+       - Show  for printing
+       - Ord   for ordering
+       - Num   for numeric types
+
+
+-}
+
+-- Automatic differentiation via dual numbers:
+data Dual = Dual { primal :: Double,
+                   deriv  :: Double
+                 } deriving Show
+
+-- (*) (Dual p1 d1) (Dual p2 p2) = Dual (p1 * p2) (p1 * d2 + p2 * d1)
+
+
 
 --- Next time: Semigroups, Monoids, Foldable, Functor
+
+class Semigroup a where
+  (<>) :: a -> a -> a
+
+  -- Associativity:
+  -- forall a b c. a <> (b <> c) == (a <> b) <> c
+
+instance Semigroup Integer where
+  (<>) = (+)
+  -- (<>) = (*)
+  -- (<>) = max
+  -- (<>) = min
+
+instance Semigroup Bool where
+  (<>) = (&&)
+  -- (<>) = (||)
+
+instance Semigroup [a] where
+  (<>) = (++)
+
+data RoughCount = Zero | One | Many deriving (Show, Eq)
+
+instance Semigroup RoughCount where
+  Zero <> x    = x
+  x    <> Zero = x
+  One  <> One  = Many
+  Many <> x    = Many
+  x    <> Many = Many
+
+data RockPaperScissors = Rock | Paper | Scissors deriving (Eq, Show)
+
+play :: RockPaperScissors -> RockPaperScissors -> RockPaperScissors
+play Rock     Scissors = Rock
+play Paper    Rock     = Paper
+play Scissors Paper    = Scissors
+play Rock     Rock     = Rock
+play Paper    Paper    = Paper
+play Scissors Scissors = Scissors
+play x        y        = play y x
+
+{- NOT ASSOCIATIVE:
+
+ghci> play Rock (play Paper Scissors)
+Rock
+ghci> play (play Rock Paper) Scissors
+Scissors
+-}
+
+class Semigroup a => Monoid a where
+  mempty :: a
+  -- forall a. a <> mempty == a
+  -- forall a. mempty <> a == a
+
+instance Monoid Integer where
+  -- (+)
+  mempty = 0
+  -- NO MONOID for max/min
+
+instance Monoid Bool where
+  -- (&&)
+  mempty = True
+
+instance Monoid [a] where
+  mempty = []
+
+foldList :: Monoid a => [a] -> a
+foldList []     = mempty
+foldList (x:xs) = x <> foldList xs
+
+foldTree :: Monoid a => Tree a -> a
+foldTree Leaf = mempty
+foldTree (Node l x r) = foldTree l <> x <> foldTree r
+
+foldMaybe :: Monoid a => Maybe a -> a
+foldMaybe Nothing  = mempty
+foldMaybe (Just a) = a
+
+class Foldable c where
+  fold :: Monoid a => c a -> a
+
+instance Foldable [] where
+  fold = foldList
+
+instance Foldable Tree where
+  fold = foldTree
+
+instance Foldable Maybe where
+  fold = foldMaybe
+
+-- Functors
+
+-- map      :: (a -> b) -> [a] -> [b]
+-- mapTree  :: (a -> b) -> Tree a -> Tree b
+-- mapMaybe :: (a -> b) -> Maybe a -> Maybe b
+
+foldMap :: Monoid b => (a -> b) -> [a] -> b
+foldMap f = fold . map f
+
+class Functor c {- Mappable c -} where
+  fmap :: (a -> b) -> c a -> c b
