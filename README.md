@@ -56,11 +56,11 @@ The notes are Haskell files with interleaved code and commentary. You are encour
 - [Week 5](lecture-notes/Week05.hs) : Classes of Types
   - [Tutorial Problems](lecture-notes/Week05Problems.hs)
   - [Tutorial Solutions](lecture-notes/Week05Solutions.hs)
-  - [Live Lecture notes](lecture-notes/Week05Intro.hs)
+  - [Live Lecture Notes](lecture-notes/Week05Intro.hs)
 - [Week 6](lecture-notes/Week06.hs) : Simulating side-effects: Exceptions, State, and Printing
   - [Tutorial Problems](lecture-notes/Week06Problems.hs)
   - [Tutorial Solutions](lecture-notes/Week06Solutions.hs)
-  - [Live notes](lecture-notes/Week06Intro.hs)
+  - [Live Lecture Notes (so far)](lecture-notes/Week06Intro.hs)
 - [Week 7](lecture-notes/Week07.hs) : Monads
   - [Tutorial Problems](lecture-notes/Week07Problems.hs)
   - [Tutorial Solutions](lecture-notes/Week07Solutions.hs)
@@ -68,7 +68,6 @@ The notes are Haskell files with interleaved code and commentary. You are encour
   - [Tutorial Problems](lecture-notes/Week08Problems.hs)
   - [Tutorial Solutions](lecture-notes/Week08Solutions.hs)
 - [Week 9](lecture-notes/Week09.hs) : Data Dependencies and Applicative Functors
-<!--   - [Live Lecture Notes](lecture-notes/Week09Intro.hs) -->
 - [Week 10](lecture-notes/Week10.hs) : Lazy Evaluation and Infinite Data
 
 You can take a look at [last year's repository](https://github.com/bobatkey/CS316-2022) and [the one before that](https://github.com/bobatkey/CS316-2021) for similar notes and some different exercises.
