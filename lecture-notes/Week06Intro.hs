@@ -167,7 +167,7 @@ andThen :: State a          -> (a -> State b)         -> State b
         -- (Int -> (Int,a)) -> (a -> Int -> (Int, b)) -> Int -> (Int, b)
 andThen computation1 kontinuation i0 =
   let (i1, a) = computation1 i0
-      (i2, b) = k a i1
+      (i2, b) = kontinuation a i1
   in (i2, b)
 
 get :: State Int
@@ -192,5 +192,151 @@ increment = get `andThen` \i -> put (i+1) `andThen` \() -> returnSt i
 -- returnOk :: a -> Maybe a
 -- returnSt :: a -> State a
 
+  -- State a = Int -> (Int,a)
+
 -- ifOK    :: Maybe a -> (a -> Maybe b) -> Maybe b
 -- andThen :: State a -> (a -> State b) -> State b
+
+-- failure :: Maybe a
+-- get :: State Int, put :: Int -> State ()
+
+
+
+
+
+
+
+
+
+
+
+-- Part 2
+
+-- Printing
+
+data Tree a
+  = Leaf
+  | Node (Tree a) a (Tree a)
+  deriving (Eq, Show)
+
+testTree :: Tree Int
+testTree = Node (Node Leaf 4 Leaf) 7 (Node Leaf 9 Leaf)
+
+printAndSum :: Tree Int -> ([String], Int)
+printAndSum Leaf = ([], 0)
+printAndSum (Node l x r) =
+  let (output1, lsum) = printAndSum l
+      xoutput         = "Doing " ++ show x
+      (output2, rsum) = printAndSum r
+  in (output1 ++ [xoutput] ++ output2, lsum + x + rsum)
+
+-- Printing
+type Printing a = ([String], a)
+
+-- returnPr
+returnPr :: a -> Printing a
+returnPr x = ([], x)
+
+-- andThenPrinting
+andThenPrinting :: Printing a -> (a -> Printing b) -> Printing b
+andThenPrinting (output1, a) k =
+  let (output2, b) = k a
+  in (output1 ++ output2, b)
+
+printStr :: String -> Printing ()
+printStr s = ([s], ())
+
+
+-- printAndSum_v2
+printAndSum_v2 :: Tree Int -> Printing Int
+printAndSum_v2 Leaf = returnPr 0
+printAndSum_v2 (Node l x r) =
+  printAndSum_v2 l              `andThenPrinting` \lsum ->
+  printStr ("Doing " ++ show x) `andThenPrinting` \() ->
+  printAndSum_v2 r              `andThenPrinting` \rsum ->
+  returnPr (lsum + x + rsum)
+
+
+-- Processes
+
+data Process a
+  = End a
+  | Input (String -> Process a)
+  | Output String (Process a)
+
+{-
+                     Input
+                      |
+                     /----\----- .....
+                    /      \
+                "Alice"    "Bob"
+                   |         |
+ Output "Hello Alice"     Output "Hello Bob"
+                   |         |
+                End ()     End ()
+-}
+
+greeter :: Process ()
+greeter = Output "What is your name?"
+         (Input (\name ->
+          Output ("Hello " ++ name) (End ())))
+
+runProcess :: Process a -> IO a
+runProcess (End a)      = return a
+runProcess (Input p)    = do s <- getLine; runProcess (p s)
+runProcess (Output s p) = do putStrLn s; runProcess p
+
+returnProcess :: a -> Process a
+returnProcess x = End x
+
+sequ :: Process a -> (a -> Process b) -> Process b
+sequ (End a)      k = k a
+sequ (Input p)    k = Input (\s -> sequ (p s) k)
+sequ (Output s p) k = Output s (sequ p k)
+
+input :: Process String
+input = Input (\s -> End s)
+
+output :: String -> Process ()
+output s = Output s (End ())
+
+greeter_v2 :: Process ()
+greeter_v2 =
+  output "What is your name?" `sequ` \() ->
+  input                       `sequ` \name ->
+  output ("Hello " ++ name)   `sequ` \() ->
+  returnProcess ()
+
+{- do output "What is your name?"
+      name <- input
+      output ("Hello " ++ name)
+-}
+
+
+
+
+
+-- Four ways of "simulating side effects"
+--
+-- All have similar interfaces:
+--
+--   ifOK            :: Maybe a    -> (a -> Maybe b)    -> Maybe b
+--   andThen         :: State a    -> (a -> State b)    -> State b
+--   andThenPrinting :: Printing a -> (a -> Printing b) -> Printing b
+--   sequ            :: Process a  -> (a -> Process b)  -> Process b
+
+
+
+
+-- The common name is "Monad"
+--              or "Warm fuzzy thing"
+
+
+
+
+
+-- class Monad m where
+--    return :: a -> m a
+--    (>>=)  :: m a -> (a -> m b) -> m b
+
+-- ';'
