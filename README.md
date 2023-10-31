@@ -60,10 +60,11 @@ The notes are Haskell files with interleaved code and commentary. You are encour
 - [Week 6](lecture-notes/Week06.hs) : Simulating side-effects: Exceptions, State, and Printing
   - [Tutorial Problems](lecture-notes/Week06Problems.hs)
   - [Tutorial Solutions](lecture-notes/Week06Solutions.hs)
-  - [Live Lecture Notes (so far)](lecture-notes/Week06Intro.hs)
+  - [Live Lecture Notes](lecture-notes/Week06Intro.hs)
 - [Week 7](lecture-notes/Week07.hs) : Monads
   - [Tutorial Problems](lecture-notes/Week07Problems.hs)
   - [Tutorial Solutions](lecture-notes/Week07Solutions.hs)
+  - [Live Lecture Notes](lecture-notes/Week07Intro.hs)
 - [Week 8](lecture-notes/Week08.hs) : Real I/O and Parser Combinators
   - [Tutorial Problems](lecture-notes/Week08Problems.hs)
   - [Tutorial Solutions](lecture-notes/Week08Solutions.hs)
