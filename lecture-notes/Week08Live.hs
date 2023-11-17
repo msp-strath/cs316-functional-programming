@@ -1,7 +1,7 @@
 {-# OPTIONS_GHC -fwarn-incomplete-patterns #-}
 module Week08Live where
 
-import Data.Char          (toUpper, isDigit, digitToInt, isSpace)
+import Data.Char          (toUpper, isDigit, digitToInt, isSpace, isAlpha)
 import Data.Foldable      (for_)
 
 
@@ -72,8 +72,8 @@ andThen2 :: Parser a -> Parser b -> Parser (a,b)
 andThen2 p1 p2 =
   bind p1 (\a -> bind p2 (\b -> nothing (a,b)))
 
-isChar :: Char -> Parser ()
-isChar c = bind char (\c' -> if c == c' then nothing () else failure)
+-- isChar :: Char -> Parser ()
+-- isChar c = bind char (\c' -> if c == c' then nothing () else failure)
 
 failure :: Parser a
 failure = MkParser (\input -> Nothing)
@@ -98,9 +98,6 @@ pairOfBools =
      isChar ','
      b2 <- boolParser
      return (b1, b2)
-
-isString :: String -> Parser ()
-isString str = for_ str (\c -> isChar c)
 
 trueP :: Parser Bool
 trueP =
@@ -142,36 +139,159 @@ boolParser_v2 = trueP `orElse` falseP
     char :: Parser Char
 -}
 
--- 1+2+3+(4+5)
+isChar :: Char -> Parser ()
+isChar c =
+  do c' <- char
+     if c == c' then return () else failure
 
-digit :: Parser Int
-digit = do
-  c <- char
-  if isDigit c then
-    return (digitToInt c)
-  else
-    failure
+isString :: String -> Parser ()
+isString str = for_ str (\c -> isChar c)
 
-expr :: Parser Int
+
+{- PLAN: write a parser for an expression language using the combinators. -}
+
+-- 1. Fix a grammar
+
+{-   <expr> ::= <mulexpr> + <expr>
+              | <mulexpr>
+
+     <mulexpr> ::= <baseexpr> * <mulexpr>
+                 | <baseexpr>
+
+     <baseexpr> ::= <number>
+                  | <variable>
+                  | ( <expr> )
+
+     <number> ::= [0-9]+
+      (one or more of characters in 0 .. 9)
+
+     <variable> ::= [A-Za-z]+
+      (one or more of alphabetic characters)
+-}
+
+-- 2. Design an Abstract Syntax Tree type
+
+data Expr
+  = Add Expr Expr
+  | Mul Expr Expr
+  | Variable String
+  | FunCall String [Expr]
+  | Number   Integer
+  deriving (Show, Eq)
+
+-- 3. Write a parser
+
+whitespace :: Parser ()
+whitespace =
+  do zeroOrMore (isChar ' ')
+     return ()
+
+expr :: Parser Expr
 expr =
-  do e1 <- baseExpr
+  do e1 <- mulexpr
+     whitespace
      isChar '+'
+     whitespace
      e2 <- expr
-     return (e1 + e2)
+     return (Add e1 e2)
   `orElse`
-  do e1 <- baseExpr
-     isChar '*'
-     e2 <- expr
-     return (e1 * e2)
-  `orElse`
-  baseExpr
+  do e <- mulexpr
+     return e
 
-baseExpr :: Parser Int
-baseExpr =
-  do d <- digit
-     return d
+mulexpr :: Parser Expr
+mulexpr =
+  do e1 <- baseexpr
+     whitespace
+     isChar '*'
+     whitespace
+     e2 <- mulexpr
+     return (Mul e1 e2)
+  `orElse`
+  do e <- baseexpr
+     return e
+
+baseexpr :: Parser Expr
+baseexpr =
+  do n <- number
+     return (Number n)
+  `orElse`
+  do f <- variable
+     isChar '('
+     args <- sepBy (isChar ',') expr
+     isChar ')'
+     return (FunCall f args)
+  `orElse`
+  do v <- variable
+     return (Variable v)
   `orElse`
   do isChar '('
+     whitespace
      e <- expr
+     whitespace
      isChar ')'
      return e
+
+wholeExpr :: Parser Expr
+wholeExpr =
+  do whitespace
+     e <- expr
+     whitespace
+     return e
+
+-- Plan for number:
+-- 1. write a parser for digits 0-9
+-- 2. write a parser for sequences of digits
+-- 3. turn lists of digits into numbers
+
+digit :: Parser Integer
+digit =
+  do c <- char
+     case c of
+       '0' -> return 0
+       '1' -> return 1
+       '2' -> return 2
+       '3' -> return 3
+       '4' -> return 4
+       '5' -> return 5
+       '6' -> return 6
+       '7' -> return 7
+       '8' -> return 8
+       '9' -> return 9
+       _   -> failure
+
+zeroOrMore :: Parser a -> Parser [a]
+zeroOrMore p =
+  do d <- p
+     ds <- zeroOrMore p
+     return (d:ds)
+  `orElse`
+  return []
+
+sepBy :: Parser () -> Parser a -> Parser [a]
+sepBy sep p =
+  do x <- p
+     xs <- zeroOrMore (do sep; p)
+     return (x:xs)
+  `orElse`
+  return []
+
+oneOrMore :: Parser a -> Parser [a]
+oneOrMore p = do d <- p
+                 ds <- zeroOrMore p
+                 return (d:ds)
+
+number :: Parser Integer
+number =
+  do ds <- oneOrMore digit
+     return (fromDigits ds)
+
+fromDigits :: [Integer] -> Integer
+fromDigits = foldl (\n d -> n*10 + d) 0
+
+alphabetic :: Parser Char
+alphabetic =
+  do c <- char
+     if isAlpha c then return c else failure
+
+variable :: Parser String
+variable = oneOrMore alphabetic
