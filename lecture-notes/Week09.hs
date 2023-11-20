@@ -492,15 +492,14 @@ instance Show a => Show (Fetch a) where
       (Blocked ["A"] <waiting>)
 
    We'll now define a 'Monad' implementation for 'Fetch'. The 'return'
-   generates 'Fetch' jobs that are already 'Done'. The "bind" ('>>=')
-   sequences 'Fetch' jobs one after the other, in a similar way to the
-   'sequ' function in the Week 07 problems sequences 'Process'es one
-   after the other. -}
+   generates 'Fetch' jobs that are already 'Done'. We will define
+   'return' as 'pure' in the 'Applicative' instance below.
+
+   The "bind" ('>>=') sequences 'Fetch' jobs one after the other, in a
+   similar way to the 'sequ' function in the Week 07 problems
+   sequences 'Process'es one after the other. -}
 
 instance Monad Fetch where
-  return :: a -> Fetch a
-  return x = Done x
-
   (>>=) :: Fetch a -> (a -> Fetch b) -> Fetch b
   Done a >>= f =
     f a

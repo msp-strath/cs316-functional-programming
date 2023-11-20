@@ -670,16 +670,24 @@ parsePairOfBools = parsePair parseBool_v2 parseBool_v2
    Both 'Maybe' and 'State' were instances of 'Monad', which allowed
    us to use generic tools for all 'Monad's, as we saw in Lecture 12.
    Could it be that 'Parser' is a 'Monad' too? Let's try to implement
-   the 'Monad' interface: -}
+   the 'Monad' interface.
 
-instance Monad Parser where
-  return x = MkParser (\input -> Just (input, x))
+   For reasons that will be explained next week, we must first
+   implement the Applicative type class, where 'return' is called
+   'pure': -}
+
+instance Applicative Parser where
+  pure x = MkParser (\input -> Just (input, x))
 {- The 'return' for 'Parser's is very similar to the combination of
    'return' for 'Maybe', which always succeeded by returning 'Just x',
    and 'return' for 'State', which returned the state value (here
    'input') without modification. In terms of parsing, 'return x' is a
    parser which consumes no input and always succeeds. -}
 
+  mf <*> ma = do f <- mf; a <- ma; return (f a)
+{- This part is explained next week. -}
+
+instance Monad Parser where
   (>>=) :: Parser a -> (a -> Parser b) -> Parser b
   p >>= k =
     MkParser (\input ->
@@ -1605,10 +1613,6 @@ readJSON path =
 {- The following two type class instance definitions are required by the
    way that the Monad type class is defined in standard Haskell. We'll
    come back to why in Week 09. -}
-
-instance Applicative Parser where
-  pure      = return
-  mf <*> ma = do f <- mf; a <- ma; return (f a)
 
 instance Functor Parser where
   fmap f p = pure f <*> p

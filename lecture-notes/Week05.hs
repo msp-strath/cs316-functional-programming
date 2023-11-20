@@ -785,8 +785,8 @@ allTrue = combineList
    list, we can get a function that checks whether or not a predicate
    is true for all elements of a list: -}
 
-forall :: (a -> Bool) -> [a] -> Bool
-forall p = combineList . map p
+forAll :: (a -> Bool) -> [a] -> Bool
+forAll p = combineList . map p
 
 
 {-    Part 5.4 : FOLDABLE TYPE CLASS
