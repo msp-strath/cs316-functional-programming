@@ -3,7 +3,7 @@
 module Week09Live where
 
 import Control.Concurrent (forkIO, MVar, newEmptyMVar, putMVar, takeMVar)
-import Prelude hiding (mapM)
+--import Prelude hiding (mapM)
 import Data.Traversable   (for)
 import Network.HTTP       ( simpleHTTP
                           , getRequest
@@ -79,6 +79,7 @@ instance Applicative Fetch where
   pure = Return
 
   (<*>) :: Fetch (a -> b) -> Fetch a -> Fetch b
+        -- Fetch a -> (a -> Fetch b) -> Fetch b
   Return f     <*> Return a = Return (f a)
   Fetch reqs k <*> Return a =
     Fetch reqs (\resps -> k resps <*> Return a)
@@ -90,8 +91,8 @@ instance Applicative Fetch where
              k1 (take (length reqs1) resps) <*>
              k2 (drop (length reqs1) resps))
 
-fetch :: String -> Fetch String
-fetch req = Fetch [req] (\[resp] -> Return resp)
+makeRequest :: String -> Fetch String
+makeRequest req = Fetch [req] (\[resp] -> Return resp)
 
 instance Functor Fetch where
   fmap f job = pure f <*> job
@@ -131,8 +132,89 @@ logService mailbox logCount =
        Stop ->
          do putStrLn "LOGGING STOPPED"
 
-startLogger :: IO (MVar LogMsg)
+type Logger = MVar LogMsg
+
+startLogger :: IO Logger
 startLogger = do
   mailbox <- newEmptyMVar
   forkIO (logService mailbox 0)
   return mailbox
+
+logMessage :: Logger -> String -> IO ()
+logMessage logger msg =
+  putMVar logger (Log msg)
+
+logStop :: Logger -> () -> IO ()
+logStop logger () =
+  putMVar logger Stop
+
+
+
+-- http://jsonplaceholder.typicode.com/todos/12
+
+
+
+-- Executing Requests concurrently
+
+doRequest :: Logger -> Request -> IO Response
+doRequest log url =
+  do log `logMessage` ("Requesting " ++ url)
+     httpResp <- simpleHTTP (getRequest url)
+     body <- getResponseBody httpResp
+     log `logMessage` ("Request " ++ url ++ " finished")
+     return body
+
+parMapM :: (a -> IO b) -> [a] -> IO [b]
+parMapM f xs =
+  do mailboxes <-
+       mapM (\a -> do m <- newEmptyMVar
+                      forkIO (do b <- f a
+                                 putMVar m b)
+                      return m)
+            xs
+     mapM takeMVar mailboxes
+
+runFetch :: Logger -> Fetch a -> IO a
+runFetch log (Return a) = return a
+runFetch log (Fetch reqs k) =
+  do resps <- parMapM (doRequest log) reqs
+     runFetch log (k resps)
+
+getField :: JSON -> String -> JSON
+getField (Object fields) nm =
+  case lookup nm fields of
+    Nothing -> Null
+    Just x  -> x
+getField _ nm = Null
+
+getString :: JSON -> String
+getString (String s) = s
+getString _          = "ERROR"
+
+getTodo :: Int -> Fetch String
+getTodo id =
+  do json <- makeRequest ("http://jsonplaceholder.typicode.com/todos/" ++ show id)
+     case runParser parseJSON json of
+       Nothing -> return "ERROR"
+       Just (_, json) -> return (getString (getField json "title"))
+
+getTodos1 :: Fetch (String, String, String)
+getTodos1 =
+  do todo1 <- getTodo 234
+     todo2 <- getTodo 123
+     todo3 <- getTodo 12
+     return (todo1, todo2, todo3)
+
+getTodos2 :: Fetch (String, String, String)
+getTodos2 =
+  pure (\todo1 todo2 todo3 -> (todo1, todo2, todo3))
+  <*> getTodo 234
+  <*> getTodo 123
+  <*> getTodo 12
+
+runFetchWithLogger :: Fetch a -> IO a
+runFetchWithLogger job =
+  do log <- startLogger
+     result <- runFetch log job
+     log `logStop` ()
+     return result
