@@ -694,7 +694,7 @@ concurrentMessages =
    A useful intuition is to think of MVars as a 'mailbox' that we can
    place individual messages into. If a sender tries to place a
    message into a mailbox that is already full, then they must
-   wait. Simialrly, if a reader tries to take a message from an empty
+   wait. Similarly, if a reader tries to take a message from an empty
    mailbox, then they must wait. Another way to think about MVars is
    as message passing channels with a capacity of 1.
 
