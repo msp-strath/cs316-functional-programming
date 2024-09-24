@@ -1,4 +1,5 @@
 {-# OPTIONS_GHC -fwarn-incomplete-patterns #-}
+{-# LANGUAGE LambdaCase #-}
 module Week01Intro where
 
 {-    WELCOME TO
@@ -6,6 +7,11 @@ module Week01Intro where
         CS316
 
           FUNCTIONAL PROGRAMMING
+
+
+      with
+        Guillaume Allais
+        Robert Atkey
 -}
 
 
@@ -97,20 +103,20 @@ module Week01Intro where
 {- Course arrangements:
 
    - Lectures:
-     - Tuesdays at 11:00 : Lecture in SW105
-     - Fridays  at 11:00 : Lecture in JA314
+     - Tuesdays at 11:00
+     - Fridays  at 11:00
 
      Tuesdays at 12:00-16:00 : Labs in Level 12 of Livingstone Tower
 
    - Holes:
-     - No lecture on Tuesday 26th
+     - No lecture on Tuesday 1st October
 
    - Video lectures, to support the in-person lectures
      - ~ 6 videos / week
      - ~ 10 minutes long
 
    - Online lecture notes in a GitHub repository
-     - git clone https://github.com/bobatkey/CS316-2023.git
+     - git clone https://github.com/msp-strath/cs316-functional-programming
      - git pull
 
 -}
@@ -171,19 +177,22 @@ module Week01Intro where
         A second chance to do the test
 
    - One large coursework "mini-project" (50%)
-        Specification released Week 3 (Monday 2nd October)
-        Submission Week 11 (~ Monday 27th November)
+        Specification released Week 3
+        Submission Week 11
+
+
+ Set-ExecutionPolicy Bypass -Scope Process -Force;[System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; try { & ([ScriptBlock]::Create((Invoke-WebRequest https://www.haskell.org/ghcup/sh/bootstrap-haskell.ps1 -UseBasicParsing))) -Interactive -DisableCurl } catch { Write-Error $_ }
 
 -}
 
 
+-- Playing cards
+data Suit = Diamonds | Hearts | Clubs | Spades | Circle
+  deriving (Show)
 
+exampleSuit :: Suit
+exampleSuit = Diamonds
 
-
-
--- Playing cards; suits
-data Suit = Diamonds | Hearts | Clubs | Spades
-  deriving (Show, Eq)
 
 data Colour = Red | Black
   deriving (Show)
@@ -192,74 +201,57 @@ colourOfSuit :: Suit -> Colour
 colourOfSuit Diamonds = Red
 colourOfSuit Hearts = Red
 colourOfSuit Spades = Black
+colourOfSuit Circle = Red
 colourOfSuit Clubs = Black
 
-data Value = Ace | N2 | N3 | N4 | N5 | N6 | N7 | N8 | N9 | N10 | Jack | Queen | King
-  deriving Show
+data Value
+  = Ace
+  | N2
+  | N3
+  | N4
+  | N5
+  | N6
+  | N7
+  | N8
+  | N9
+  | N10
+  | Jack
+  | Queen
+  | King
+  deriving (Show)
 
-numericOfValue :: Value -> Int
-numericOfValue Ace = 1
-numericOfValue N2 = 2
-numericOfValue N3 = 3
-numericOfValue N4 = 4
-numericOfValue N5 = 5
-numericOfValue N6 = 6
-numericOfValue N7 = 7
-numericOfValue N8 = 8
-numericOfValue N9 = 9
-numericOfValue N10 = 10
-numericOfValue Jack = 11
-numericOfValue Queen = 12
-numericOfValue King = 13
+numericValue :: Value -> Int
+numericValue = \ x -> case x of
+  Ace -> 1
+  N2 -> 2
+  N3 -> 3
+  N4 -> 4
+  N5 -> 5
+  N6 -> 6
+  N7 -> 7
+  N8 -> 8
+  N9 -> 9
+  N10 -> 10
+  Jack -> 11
+  Queen -> 12
+  King -> 13
 
-compareValue :: Value -> (Value -> Bool)
-compareValue v1 v2 = numericOfValue v1 <= numericOfValue v2
+lessThanOrEqualValue :: Value -> Value -> Bool
+lessThanOrEqualValue v1 v2 =
+  numericValue v1 <= numericValue v2
+
 
 data Card = MkCard Suit Value
-       --   MkCard :: Suit -> Value -> Card
-  deriving Show
+  deriving (Show)
 
 suitOfCard :: Card -> Suit
 suitOfCard (MkCard suit _) = suit
 
--- suitOfCard (MkCard Spades N7)
---   -- suit = Spades
---   == Spades
-
-valueOfCard :: Card -> Value
-valueOfCard (MkCard _ value) = value
 
 
-myHand = [ MkCard Hearts Ace
-         , MkCard Diamonds N8
-         , MkCard Spades Queen
-         , MkCard Spades N2
-         , MkCard Clubs N9
-         ]
-
-
-
--- Sorting and filtering lists of cards
 {-
-ghci> map (\card -> suitOfCard card) myHand
-[Hearts,Diamonds,Spades,Spades,Clubs]
-ghci> nub (map (\card -> suitOfCard card) myHand)
+   suitOfCard (MkCard Hearts Queen)
 
-<interactive>:16:1: error:
-    Variable not in scope: nub :: [Suit] -> t
-ghci> import Data.List
-ghci> :r
-[1 of 1] Compiling Week01Intro      ( Week01Intro.hs, interpreted )
-Ok, one module loaded.
-ghci> nub (map (\card -> suitOfCard card) myHand)
-[Hearts,Diamonds,Spades,Clubs]
-ghci> nub (map (\card -> suitOfCard card) (filter (\card -> compareValue (valueOfCard card) Queen) myHand)
 
-<interactive>:20:101: error:
-    parse error (possibly incorrect indentation or mismatched brackets)
-ghci> nub (map (\card -> suitOfCard card) (filter (\card -> compareValue (valueOfCard card) Queen) myHand))
-[Hearts,Diamonds,Spades,Clubs]
-ghci> nub (map (\card -> suitOfCard card) (filter (\card -> compareValue (valueOfCard card) N4) myHand))
-[Hearts,Spades]
-ghci>
+
 -}
