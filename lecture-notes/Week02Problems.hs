@@ -73,10 +73,14 @@ treeInsert2 = undefined
       Write this function in three parts: -}
 
 {-    'split' splits the input into two lists: one with the odd numbered
-      elements and one with the even numbered elements. HINT: you can
-      pattern match on multiple elements at the head of a list with
-      'x1:x2:xs', and you can use the '(odds,evens) = ...' syntax in a
-      'where' clause. -}
+      elements and one with the even numbered elements. For example:
+
+        > split [45,12,89,29,93]
+        ([45,89,93],[12,29])
+
+      HINT: you can pattern match on multiple elements at the head of
+      a list with 'x1:x2:xs', and you can use the '(odds,evens) = ...'
+      syntax in a 'where' clause. -}
 
 split :: [a] -> ([a], [a])
 split = undefined

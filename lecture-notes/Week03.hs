@@ -431,13 +431,24 @@ pipeline2 = length . filter (\(s,i) -> s == "CS316")
    matrices has the same effect as composing the linear functions that
    they represent.)
 
-   So what is the equivalent of '1'?
+   So what is the equivalent of '1'? '1' has the special property that
+   it "does nothing" when used with multiplication: '1 * x = x',
+   always.
 
-   It is identity function, which "does nothing" by returning its
-   argument unaffected: -}
+   The function equivalent of '1' is the identity function, which
+   "does nothing" by returning its argument unaffected: -}
 
 id :: a -> a
 id x = x
+
+{- By writing out the definitions, convince yourself that:
+
+      f . id = f
+
+   and
+
+      id . f = f
+-}
 
 
 {-     Part 3.5 : MAP FOR OTHER DATATYPES

@@ -6,7 +6,7 @@ import Prelude hiding (foldr, foldl, Maybe (..), Left, Right, filter, zip, map, 
 import Data.List.Split (splitOn)
 import Data.List hiding (foldr, foldl, filter, map, concat)
 
-{-    WEEK 04 : PATTERNS OF RECURSION
+{-    Week 04 : PATTERNS OF RECURSION
 
    In Week 03 we looked at some ways that higher order functions can
    be used to combine common patterns of behaviour into single
@@ -18,7 +18,7 @@ import Data.List hiding (foldr, foldl, filter, map, concat)
    We will now look at some more examples of higher order functions
    that capture common patterns. The key common factor is patterns of
    recursion that follow the structure of a datatype. This captures
-   the pattern of "doing something" to every node in a datastructure,
+   the pattern of "doing something" to every node in a data structure,
    similar to the idea of the Visitor pattern in OO languages. -}
 
 
@@ -26,12 +26,12 @@ import Data.List hiding (foldr, foldl, filter, map, concat)
 
    Most of the functions we have written so far in this course have
    been recursive, because this is the way that Haskell deals with
-   data of arbitrary size. In Week 01, we saw the 'total' function,
+   data of arbitrary size. In Week 01, we saw the 'sumList' function,
    which sums up the integers in a list of integers: -}
 
-total :: [Int] -> Int
-total []     = 0
-total (x:xs) = x + total xs
+sumList :: [Int] -> Int
+sumList []     = 0
+sumList (x:xs) = x + sumList xs
 
 {- Another function we've seen, or used, a few times is 'len', which
    computes the length of a list, again using recursion: -}
@@ -73,14 +73,14 @@ append' xs ys = appendHelper xs
    of these functions with parameters, to make a generic version of
    all these functions that can be specialised to each one of them.
 
-   Let's start with 'total', as it is perhaps the simplest one. If we
+   Let's start with 'sumList', as it is perhaps the simplest one. If we
    first make a generic version by turning the specific '0' into an
    argument, then we get a new function that effectively computes the
    sum of a list, plus some initial value: -}
 
-totalPlus :: Int -> [Int] -> Int
-totalPlus a []     = a
-totalPlus a (x:xs) = x + totalPlus a xs
+sumListPlus :: Int -> [Int] -> Int
+sumListPlus a []     = a
+sumListPlus a (x:xs) = x + sumListPlus a xs
 
 {- Now we go another step, and generalise from _adding_ the head on to
    the result of processing the rest of the list to performing some
@@ -92,11 +92,11 @@ foldr :: (a -> b -> b) -> b -> [a] -> b
 foldr f a []     = a
 foldr f a (x:xs) = f x (foldr f a xs)
 
-{- We can now recover 'total' by specialising with the operation being
-   '+' and the initial value being '0': -}
+{- We can now get back 'sumList' by specialising the operation to be '+'
+   and the initial value to be '0': -}
 
-total' :: [Int] -> Int
-total' xs = foldr (+) 0 xs
+sumList' :: [Int] -> Int
+sumList' xs = foldr (+) 0 xs
 
 {- And we can recover 'len' by specialising with the operation being
    "add one" (ignoring the actual value of 'x') and the initial value

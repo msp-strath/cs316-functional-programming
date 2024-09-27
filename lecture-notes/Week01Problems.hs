@@ -99,6 +99,7 @@ data Markup
   | Bold   Markup        -- ^ Some markup to be styled in bold
   | Italic Markup        -- ^ Some markup to be styled in italics
   | Concat Markup Markup -- ^ Two pieces of markup to be displayed in sequence
+  deriving (Show, Eq)
 
 {-    Here is an example: -}
 
