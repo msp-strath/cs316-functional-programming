@@ -1,7 +1,7 @@
 {-# OPTIONS_GHC -fwarn-incomplete-patterns #-}
 module Week02 where
 
-{- CS316 2021/22 : Week 2
+{- CS316 : Week 2
 
              SOLVING PROBLEMS BY RECURSION
 
@@ -27,9 +27,9 @@ isMember0 x [] = False
 {- In the 'cons' case, we need to compare the head of the list with the
    thing we are looking for.
 
-   We can't only use pattern matching to solve this problem, because
-   there is no way of writing a pattern to say "the same as the value
-   from that other pattern". If we try something like:
+   We can't only use pattern matching to do all of this, because there
+   is no way of writing a pattern to say "the same as the value from
+   that other pattern". If we try something like:
 
      isMember0 x (x:xs) = True
 
@@ -159,7 +159,7 @@ isMember3 x (y:ys)
    to consider:
 
       1) insertion into the empty list -- we return a list with one
-         element
+         element.
 
       2) insertion into a list when the head is greater than the
          element to be inserted -- we return the new element as the
@@ -790,8 +790,8 @@ makeChange (coin:coins) used amount
    ```
 
    At a high-level what is going on here is that we have to execute
-   `makeChange [10] [1] 9` to see if that works, if it does then
-   great: we return the result; if it doesn't then we try something
+   `makeChange [10] [1] 9` to see if that works. If it does then
+   great, we return the result. If it doesn't then we try something
    else. Note that the branches of the case are "waiting" for the
    result to come back to work out what to do. In this sense the
    "state" of the search is saved, waiting to see whether the second
@@ -866,5 +866,4 @@ makeChange (coin:coins) used amount
    above; but Haskell is designed so that you can't tell the
    difference between what it really does and the rewriting steps I
    wrote out above, except that what it really does is more
-   efficient.)
--}
+   efficient.) -}

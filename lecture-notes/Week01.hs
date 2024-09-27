@@ -3,7 +3,7 @@ module Week01 where
 
 import Prelude hiding (take, drop, Left, Right, Maybe (..), reverse, length)
 
-{- CS316 2022/23 : Week 1
+{- CS316 : Week 1
 
              DATA AND FUNCTIONS
 
@@ -178,9 +178,10 @@ isVertical Right = False
    function that takes two 'Direction's as input and returns 'True' if
    they are the same, and 'False' otherwise.
 
-   This definition also introduces a new kind of pattern: "wildcard"
-   patterns, written using an underscore '_'. These patterns stand for
-   any input that wasn't matched by the previous patterns. -}
+   This definition also introduces a new kind of pattern that doesn't
+   match a piece of data directly: "wildcard" patterns, written using
+   an underscore '_'. These patterns match any input that wasn't
+   matched by the patterns in the lines above. -}
 
 equalDirection :: Direction -> Direction -> Bool
 equalDirection Up    Up    = True
@@ -283,7 +284,7 @@ withDistance Right d = RightD d
 
       UpD 100
 
-   In general, we can put variables anyway in patterns on the left
+   In general, we can put variables anywhere in patterns on the left
    hand side of the equals where we would put a concrete value, and it
    will be set to whatever matches at that point in the input.
 
@@ -381,8 +382,8 @@ data Pair a b = MkPair a b
   deriving Show
 
 {- The new thing here is the 'a' and 'b' between the name of the
-   datatype and the 'equals'. This indicates that this datatype takes
-   two type parameters called 'a' and 'b'. These are then used in the
+   datatype and the '='. This indicates that this datatype takes two
+   type parameters called 'a' and 'b'. These are then used in the
    constructor 'MkPair' where we used concrete type names before.
 
    We can now use the 'MkPair' constructor to construct pairs of any
@@ -436,8 +437,8 @@ swap (MkPair a b) = MkPair b a
 
 
 {- We have seen several features of datatypes now: multiple
- constructors, value parameters, and type parameters. The following
- extremely useful type mixes the all together in one use: -}
+   constructors, value parameters, and type parameters. The following
+   extremely useful type mixes them all together in one use: -}
 
 data Maybe a
   = Nothing
@@ -449,7 +450,7 @@ data Maybe a
    (for example). If there is no sensible value to give, then we write
    'Nothing'. The 'Maybe' type is similar to the use of 'null' in a
    language like Java, except that the possible absence of a value is
-   made explicit in the type.
+   made explicit by the use of the 'Maybe'.
 
    Here is an example of the use of 'Maybe'. The function
    'verticalDistance' is expected to return the vertical distance
@@ -468,15 +469,15 @@ verticalDistance (MkPair Right dist) = Nothing
 
 
 
-{-!      Part 1.4 : RECURSIVE DATATYPES AND FUNCTIONS
+{-      Part 1.4 : RECURSIVE DATATYPES AND FUNCTIONS
 
 
-  The datatypes we have seen so far only allow us to represent fixed
-  amounts of data. However, most programs we want to write will use
-  arbitrarily sized amounts of data.
+   The datatypes we have seen so far only allow us to represent fixed
+   amounts of data. However, most programs we want to write will use
+   arbitrarily sized amounts of data.
 
-  To do this in Haskell, we use datatypes that refer to themselves
-  recursively. Here is an example, used for representing lists: -}
+   To do this in Haskell, we use datatypes that refer to themselves
+   recursively. Here is an example, used for representing lists: -}
 
 data List a
   = Nil
