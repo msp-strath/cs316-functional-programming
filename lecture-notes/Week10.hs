@@ -17,7 +17,7 @@ import Debug.Trace
    Programming Matters" by John Hughes (link in the online notes). -}
 
 
-{-    Part 10.1 : How Haskell Evaluates Functions
+{-    Part 10.1 : HOW HASKELL EVALUATES FUNCTIONS
 
    Here is a simple function: -}
 
@@ -62,7 +62,7 @@ inc n = n + 1
    languages pick one or the other to be the default, and offer the
    other via some special mechanism. -}
 
-{-    Part 10.2 : Termination Behaviour
+{-    Part 10.2 : TERMINATION BEHAVIOUR
 
    Is there any difference between the two strategies? For programs
    that terminate under both, they will always compute the same
@@ -113,7 +113,7 @@ const a b = a
    possible. Call-by-Value is sometimes refered to as 'eager', in
    contrast. -}
 
-{-      Part 10.3 : Sharing, and Lazy Evaluation
+{-      Part 10.3 : SHARING, AND LAZY EVALUATION
 
    Since Call-by-Name has this nice property in terms of termination
    behaviour, it seems like it would be a good idea to build a
@@ -317,7 +317,7 @@ square x = x * x
        50
 -}
 
-{-     Part 10.4 : Laziness, Procrastination, and Strictness
+{-     Part 10.4 : LAZINESS, PROCRASTINATION, AND STRICTNESS
 
    Laziness is not always the best strategy.
 
@@ -435,7 +435,7 @@ sumStrict accum (x:xs) = (sumStrict $! (accum+x)) xs
    See https://ghc.haskell.org/trac/ghc/ticket/2273 for more details)
 -}
 
-{-     Part 10.5 : Infinite Data
+{-     Part 10.5 : INFINITE DATA
 
    So lazy evaluation has some benefits -- it only computes as much as
    it needs to -- and some downsides -- it can put off doing some

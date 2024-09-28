@@ -54,7 +54,7 @@ class Monad m where
    put to use in the Haxl library developed by Facebook. We will
    develop a toy version of Haxl in the last part of this week. -}
 
-{-    Part 9.1 : Sequences of Actions
+{-    Part 9.1 : SEQUENCES OF ACTIONS
 
    To introduce the idea of Applicatives, we first look at a common
    pattern that arises when using monads. Often we will execute a
@@ -271,7 +271,7 @@ mapTreeM_v2 f (Node l x r) =
    noise to handle the side effects. -}
 
 
-{-     Part 9.2 : Applicative, a New Typeclass
+{-     Part 9.2 : APPLICATIVE, A NEW TYPECLASS
 
    Often, when we want to do programming with side effects, it
    suffices to use only 'return' and 'mapply', like in 'mapM' and
@@ -390,7 +390,7 @@ mapTreeA f (Node l x r) = pure Node <*> mapTreeA f l <*> f x <*> mapTreeA f r
 
 
 
-{-       Part 9.3 : Data Dependencies and Parallelism
+{-       Part 9.3 : DATA DEPENDENCIES AND PARALLELISM
 
    As we mentioned above, the key difference between the 'Monad' and
    'Applicative' interfaces is whether or not the second operation to
@@ -609,7 +609,7 @@ parallelJob =
    in parallel, using the concurrency features of Haskell. -}
 
 
-{-     Part 9.4 : Concurrency and Communication
+{-     Part 9.4 : CONCURRENCY AND COMMUNICATION
 
    To complete our exploration of using Applicatives for making
    parallel requests, we will make an implementation of 'Fetch' that
@@ -754,7 +754,7 @@ spawnReceiver mvar =
    top of MVars. -}
 
 
-{-     Part 9.5 : A Logging 'Object'
+{-     Part 9.5 : A LOGGING 'OBJECT'
 
    We can use 'MVar's to write a simple concurrent "object" that sits
    in the background listening for messages. It waits for messages to
@@ -846,7 +846,7 @@ logStop loggerVar =
 
 
 
-{-     Part 9.6 Executing Requests Concurrently
+{-     Part 9.6 : EXECUTING REQUESTS CONCURRENTLY
 
    In Part 9.3 we saw how a toy version of Facebook's Haxl library
    uses the 'Applicative' interface to construct sequences of requests

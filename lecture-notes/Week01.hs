@@ -363,7 +363,7 @@ convertDirectionBack (DirectionWithDistance dir dist) = withDistance dir dist
 
 
 
-{-!      Part 1.3 : DATATYPES AND FUNCTIONS WITH TYPE PARAMETERS
+{-      Part 1.3 : DATATYPES AND FUNCTIONS WITH TYPE PARAMETERS
 
 
   We defined the datatype 'DirectionWithDistance2' to represent
@@ -634,7 +634,7 @@ sumList (x:xs) = x + sumList xs
 -}
 
 
-{-!      Part 1.5 : APPENDING AND REVERSING LISTS
+{-      Part 1.5 : APPENDING AND REVERSING LISTS
 
   Two useful functions on lists are 'append' and 'reverse'. These will
   also give us an opporuntity to see how to use multiple functions to
@@ -788,7 +788,7 @@ fastReverse xs = fastReverseHelper xs []
 -}
 
 
-{-!      Part 1.6 : TAKE, DROP AND CHUNK
+{-      Part 1.6 : TAKE, DROP AND CHUNK
 
 
   Finally for this week, we'll look at two more useful list functions,

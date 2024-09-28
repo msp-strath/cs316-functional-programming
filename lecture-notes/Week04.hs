@@ -625,7 +625,7 @@ lateBooks :: Database -> [(Book,Person)]
 lateBooks db = [ (book,per) | (per, book, fee) <- db, fee > 0 ]
 
 
-{-     PART 4.6: JOINING FILES IN A HACKY WAY
+{-     Part 4.6: JOINING FILES IN A HACKY WAY
 
    We can use list comprehensions to join two files in a
    quick-and-dirty way in GHCi. In real life, we do this to
