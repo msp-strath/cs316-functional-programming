@@ -38,6 +38,7 @@ The notes are Haskell files with interleaved code and commentary. You are encour
 - [Week 4](lecture-notes/Week04.hs) : Patterns of Recursion
   - [Tutorial Problems](lecture-notes/Week04Problems.hs)
   - [Tutorial Solutions](lecture-notes/Week04Solutions.hs)
+  - [Live Lecture code (Tuesday)](lecture-notes/Week04Live.hs)
 - [Week 5](lecture-notes/Week05.hs) : Classes of Types
   - [Tutorial Problems](lecture-notes/Week05Problems.hs)
   - [Tutorial Solutions](lecture-notes/Week05Solutions.hs)
