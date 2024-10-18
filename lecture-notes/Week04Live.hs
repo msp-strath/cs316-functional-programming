@@ -70,7 +70,13 @@ foldl acc update (x : xs) =
   foldl acc' update xs
 
 step :: String -> String -> String
-step a b = "(" ++ a ++ " - " ++ b ++ ")"
+step a b = "(" ++ a ++ " ### " ++ b ++ ")"
+
+{-
+   public static String step (String a, String b) {
+     return "(" + a + " + " + b + ")";
+   }
+-}
 
 base :: String
 base = "0"
@@ -103,3 +109,111 @@ daysTransactions =
 
 initialBank :: Bank
 initialBank = Account 0 0
+
+------------------------------------------------------------------------------
+
+-- interface ListVisitor<Elements, Result> {
+--    public Result visitNil();
+--    public Result visitElement(Element a, Result restOfTheList);
+-- }
+--
+-- Result visitListRight(ListVisitor<Element, Result> visitor, List<Element> list) {
+--    Result answer = visitor.visitNil();
+--    for (int i = list.length() - 1; i >= 0; i--) {
+--       answer = visitor.visitElement(list.get(i), answer);
+--    }
+--    return answer;
+-- }
+--
+-- Result visitListLeft(ListVisitor<Element, Result> visitor, List<Element> list) {
+--    Result answer = visitor.visitNil();
+--    for (Element e : list) {
+--       answer = visitor.visitElement(e, answer);
+--    }
+--    return answer;
+-- }
+
+------------------------------------------------------------------------------
+
+data Formula a
+  = Atom a
+  | And (Formula a) (Formula a)
+  | Or (Formula a) (Formula a)
+  | Not (Formula a)
+  deriving Show
+
+foldrFormula :: (a -> b -> b) -> b -> Formula a -> b
+foldrFormula combine initial f = case f of
+  Atom a  -> combine a initial
+  And e f ->
+    -- foldr c n (xs ++ ys) == foldr c (foldr c n ys) xs
+    let intermediate = foldrFormula combine initial f in
+    let final        = foldrFormula combine intermediate e in
+    final
+  Or e f ->
+    -- foldr c n (xs ++ ys) == foldr c (foldr c n ys) xs
+    -- f x y (e a b) == let z = e a b in f x y z
+    let intermediate = foldrFormula combine initial f in
+    let final        = foldrFormula combine intermediate e in
+    final
+  Not f -> foldrFormula combine initial f
+
+myFormula :: Formula String
+myFormula = Not (And (Atom "X") (Atom "Y"))
+
+foldFormula :: (a -> result) -- atoms
+            -> (result -> result -> result) -- ands
+            -> (result -> result -> result) -- ors
+            -> (result -> result) -- not
+            -> Formula a
+            -> result
+foldFormula atom and or not (Atom b)  = atom b
+foldFormula atom and or not (And e f) =
+  and (foldFormula atom and or not e)
+      (foldFormula atom and or not f)
+foldFormula atom and or not (Or  e f) =
+  or (foldFormula atom and or not e)
+     (foldFormula atom and or not f)
+foldFormula atom and or not (Not f)   =
+  not (foldFormula atom and or not f)
+
+-- foldrFormula c n = foldr c n . foldFormula (\x -> [x]) (++) (++) id
+
+------------------------------------------------------------------------------
+-- List comprehensions
+
+exampleList :: [Int]
+exampleList = [1..10]
+
+evens :: [Int]
+evens = [  x     | x <- exampleList
+                 , x `mod` 2 == 0
+                 ]
+
+evenSums :: [(Int, Int)]
+evenSums =
+  [ (x, y)
+  | x <- exampleList, y <- exampleList
+  , (x + y) `mod` 2 == 0
+  , x <= y ]
+
+-- SELECT DISTINCT T1.x, T2.x
+-- FROM exampleList as T1, exampleList as T2
+-- WHERE (T1.x + T2.x) `mod` 2 == 0
+--   AND T1.x <= T2.x
+
+myDatabase :: [(String, String, Int)]
+myDatabase = [ ("BobTown",        "Mars",    100)
+             , ("GallaisVille",   "Venus",   200)
+             , ("Alasdairopolis", "Mercury", 1)
+             , ("JulesCity",      "Mars",    200)
+             ]
+
+-- An example "query"
+myQuery = [ map toUpper cityName
+          | (cityName, planet, pop) <- myDatabase
+          , (pop > 5) || (planet == "Mars")
+          ]
+
+-- equivalent to
+--
