@@ -1,6 +1,7 @@
 {-# OPTIONS -fwarn-incomplete-patterns #-}
 module Week04Live where
 
+import Data.Char (toUpper)
 import Prelude hiding (foldl, length, product, sum, concat)
 
 -- WEEK 04 : PATTERNS of RECURSION
