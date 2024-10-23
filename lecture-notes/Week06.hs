@@ -10,11 +10,11 @@ import Prelude hiding (return, Either (..))
    thing?
 
    Haskell is based around the idea that programs are functions in a
-   mathematical sense. They take some inputs and produce an output,
-   and (crucially) nothing else. This means that, if we have a
-   function with the following type:
+   mathematical sense. They take some inputs, produce an output, and
+   (crucially) do absolutely nothing else. This means that if we have
+   a function with the following type:
 
-        f : Int -> Int
+        f :: Int -> Int
 
    then we know, from the type, that 'f' is a function that, when we
    give it an 'Int', we will get back an 'Int' (assuming it
