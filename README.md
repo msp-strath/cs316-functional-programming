@@ -42,7 +42,7 @@ The notes are Haskell files with interleaved code and commentary. You are encour
 - [Week 5](lecture-notes/Week05.hs) : Classes of Types
   - [Tutorial Problems](lecture-notes/Week05Problems.hs)
   - [Tutorial Solutions](lecture-notes/Week05Solutions.hs)
-  - [Live Lecture Notes (Tuesday)](lecture-notes/Week05Live.hs)
+  - [Live Lecture Notes (Tuesday and Friday)](lecture-notes/Week05Live.hs)
 - [Week 6](lecture-notes/Week06.hs) : Simulating side-effects: Exceptions, State, and Printing
   - [Tutorial Problems](lecture-notes/Week06Problems.hs)
   - [Tutorial Solutions](lecture-notes/Week06Solutions.hs)
