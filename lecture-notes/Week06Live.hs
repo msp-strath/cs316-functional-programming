@@ -44,6 +44,9 @@ andThen :: Maybe a -> (a -> Maybe b) -> Maybe b
 andThen Nothing k = Nothing
 andThen (Just v) k = k v
 
+failure :: Maybe a
+failure = Nothing
+
 find2 :: (Eq k1, Eq k2)
       => k1 -> k2
       -> Tree (k1, Tree (k2, a)) -> Maybe a
@@ -103,9 +106,117 @@ numberTree (Node l r) =
 
 example = Node (Node (Leaf 'a') (Leaf 'b')) (Leaf 'c')
 
+
+
 -- andThen      :: Maybe   a -> (a -> Maybe   b) -> Maybe   b
 -- andThenState :: State s a -> (a -> State s b) -> State s b
 
--- Choice a -> Choice a -> Choice a
+-- c `andThen` k   ~=~   A x = c;
+--                       k[x]
+--
 
+-- Choice a -> Choice a -> Choice a
 -- andThenChoice :: Choice a -> (a -> Choice b) -> Choice b
+
+
+
+-- Printing
+type Logging log a = (log, a)
+
+andThenLogging
+  :: Semigroup log
+  => Logging log a -> (a -> Logging log b) -> Logging log b
+andThenLogging (output1, a) k =
+  let (output2, b) = k a in
+  (output1 <> output2, b)
+
+returnLogging :: Monoid log => a -> Logging log a
+returnLogging a = (mempty, a)
+
+logging :: String -> Logging [String] ()
+logging str = ([str], ())
+
+printTree :: Show a => Tree a -> Logging [String] (Tree a)
+printTree (Leaf a) =
+  logging ("Visiting " ++ show a) `andThenLogging` \ _ ->
+  returnLogging (Leaf a)
+printTree (Node l r) =
+  printTree l `andThenLogging` \ l' ->
+  printTree r `andThenLogging` \ r' ->
+  returnLogging (Node l' r')
+
+-- I/O Processes
+
+data Process a
+  = End a
+  | Input (String -> Process a)
+  | Output String (Process a)
+
+{-
+                     Input
+                      |
+                     /----\----- .....
+                    /      \
+                "Alice"    "Bob"
+                   |         |
+ Output "Hello Alice"     Output "Hello Bob"
+                   |         |
+                End ()     End ()
+-}
+
+greeter :: Process ()
+greeter = Input (\name -> Output ("Hello " ++ name) (End ()))
+
+{-  name <- input;
+    print ("Hello " ++ name);
+    return ()
+-}
+
+andThenProcess :: Process a -> (a -> Process b) -> Process b
+andThenProcess (End a) k = k a
+andThenProcess (Input react) k
+  = Input (\ str -> react str `andThenProcess` k)
+andThenProcess (Output msg p) k
+  = Output msg (p `andThenProcess` k)
+
+runProcess :: [String] -> Process a -> Logging [String] a
+runProcess inputs (End a) = returnLogging a
+runProcess (i : inputs) (Input react)
+  = runProcess inputs (react i)
+runProcess inputs (Output msg p)
+  = logging msg `andThenLogging` \ _ ->
+    runProcess inputs p
+
+input :: Process String
+input = Input (\ str -> End str)
+
+output :: String -> Process ()
+output msg = Output msg (End ())
+
+returnProcess :: a -> Process a
+returnProcess = End
+
+greeter2 :: Process ()
+greeter2 =
+  input `andThenProcess` \ name ->
+  output ("Hello " ++ name) `andThenProcess` \ _ ->
+  returnProcess ()
+
+greeter3 :: Process ()
+greeter3 =
+  input  `andThenProcess` \name ->
+  if name == "Bob" then
+    (output "That is a silly name" `andThenProcess` \ _ ->
+     greeter3)
+  else
+    (output ("Hello " ++ name) `andThenProcess` \ _ ->
+     returnProcess ())
+
+
+
+realRunProcess :: Process a -> IO a
+realRunProcess (End a) = return a
+realRunProcess (Input react) =
+  do input <- getLine; realRunProcess (react input)
+realRunProcess (Output msg p) =
+  do putStrLn msg; realRunProcess p
