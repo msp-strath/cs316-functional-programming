@@ -50,6 +50,7 @@ The notes are Haskell files with interleaved code and commentary. You are encour
 - [Week 7](lecture-notes/Week07.hs) : Monads
   - [Tutorial Problems](lecture-notes/Week07Problems.hs)
   - [Tutorial Solutions](lecture-notes/Week07Solutions.hs)
+  - [Live Lecture Notes (Tuesday)](lecture-notes/Week07Live.hs)
 - [Week 8](lecture-notes/Week08.hs) : Real I/O and Parser Combinators
   - [Tutorial Problems](lecture-notes/Week08Problems.hs)
   - [Tutorial Solutions](lecture-notes/Week08Solutions.hs)
