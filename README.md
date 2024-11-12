@@ -54,7 +54,7 @@ The notes are Haskell files with interleaved code and commentary. You are encour
 - [Week 8](lecture-notes/Week08.hs) : Real I/O and Parser Combinators
   - [Tutorial Problems](lecture-notes/Week08Problems.hs)
   - [Tutorial Solutions](lecture-notes/Week08Solutions.hs)
-  - [Live Lecture Notes](lectures-notes/Week08Live.hs)
+  - [Live Lecture Notes (Tuesday)](lectures-notes/Week08Live.hs)
 - [Week 9](lecture-notes/Week09.hs) : Data Dependencies and Applicative Functors
   - [Live Lecture Code](lecture-notes/Week09Live.hs)
 - [Week 10](lecture-notes/Week10.hs) : Lazy Evaluation and Infinite Data
