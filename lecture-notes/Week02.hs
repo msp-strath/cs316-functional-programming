@@ -394,13 +394,13 @@ data BST a
 
        1. The tree is empty: we make a new tree with a single node;
 
-       2. The element at the root of the tree is less than the element
-          we want to insert: we insert the element into the left hand
+       2. The element we are inserting is less than the element at the
+          root of the tree: we insert the element into the left hand
           (smaller) subtree;
 
-       3. The element at the root of the tree is greater than or equal
-          to the element we want to insert: we insert the element into
-          the right hand (larger) subtree.
+       3. The element we want to insert is greater than or equal to
+          the element at the root of the tree: we insert the element
+          into the right hand (larger) subtree.
 
    We write out these cases using pattern matching and guards. As with
    the 'insert' function above, this function is structurally
