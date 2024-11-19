@@ -5,7 +5,7 @@ module Week08Live where
 import Control.Monad (ap)
 
 import Prelude hiding (putChar, getChar)
-import Data.Char          (toUpper, isDigit, digitToInt, isSpace)
+import Data.Char          (toUpper, isDigit, digitToInt, isSpace, isAlpha)
 import Data.Foldable      (for_)
 import Data.IORef         (IORef, newIORef, readIORef,
                            writeIORef, modifyIORef)
@@ -81,52 +81,247 @@ type Parser_v1 a = String -> Maybe a
 
 -- Parsing Booleans
 
-boolean :: Parser_v1 Bool
-boolean "True" = Just True
-boolean "False" = Just False
-boolean _ = Nothing
+boolean_v1 :: Parser_v1 Bool
+boolean_v1 "True" = Just True
+boolean_v1 "False" = Just False
+boolean_v1 _ = Nothing
 
 -- How to parse pairs of Booleans?
 
-newtype Parser_v2 a = MkParser_v2 { runParser_v2 :: String -> Maybe (a, String) }
+-- Problem: these parsers are "monolithic". There is no way to access
+-- the trailing input they couldn't parse.
+
+
+-- Solution: Parsing with Leftovers
+newtype Parser a = MkParser { runParser :: String -> Maybe (a, String) }
   deriving (Functor)
 
-instance Applicative Parser_v2 where
-  pure = return
+-- runParser :: Parser a -> String -> Maybe (a, String)
+-- runParser (MkParser p) = p
+
+-- See next week
+instance Applicative Parser where
+  pure x = MkParser (\ str -> Just (x, str))
   (<*>) = ap
 
-instance Monad Parser_v2 where
-  return x = MkParser_v2 (\ str -> Just (x, str))
-  mx >>= mf = MkParser_v2 (\ str0 ->
-                case runParser_v2 mx str0 of
+instance Monad Parser where
+  mx >>= mf = MkParser (\ str0 ->
+                case runParser mx str0 of
                   Nothing -> Nothing
-                  Just (x, str1) -> runParser_v2 (mf x) str1)
+                  Just (x, str1) -> runParser (mf x) str1)
 
-boolean_v2 :: Parser_v2 Bool
-boolean_v2 = MkParser_v2 go where
+char :: Parser Char
+char = MkParser go where
 
-  go ('T' : xs) = Just (True, xs)
-  go ('F' : xs) = Just (False, xs)
-  go _ = Nothing
-
-string_v2 :: String -> Parser_v2 ()
-string_v2 str = for_ str char_v2
-
-char_v2 :: Char -> Parser_v2 ()
-char_v2 c = MkParser_v2 go where
-
-  go (x : xs)
-    | c == x = Just ((), xs)
-    | otherwise = Nothing
+  go (x : xs) = Just (x, xs)
   go [] = Nothing
 
-boolean2_v2 :: Parser_v2 (Bool, Bool)
-boolean2_v2 = do
-  char_v2 '('
-  l <- boolean_v2
-  char_v2 ','
-  r <- boolean_v2
-  char_v2 ')'
+orElseMaybe :: Maybe a -> Maybe a -> Maybe a
+orElseMaybe (Just x) _ = Just x
+orElseMaybe Nothing  y = y
+
+orElse :: Parser a -> Parser a -> Parser a
+orElse p1 p2 =
+  MkParser (\input -> runParser p1 input `orElseMaybe` runParser p2 input)
+
+failure :: Parser a
+failure = MkParser (\_ -> Nothing)
+
+{-  The basic parser interface:
+
+
+    Parser a
+       ^--- represents a parser of things of type 'a'
+
+    return :: a -> Parser a
+       ^--- parse nothing and return 'a'
+
+    (>>=)  :: Parser a -> (a -> Parser b) -> Parser b
+       ^--- sequence two parsers, feeding the output of the first into the second
+
+    orElse :: Parser a -> Parser a -> Parser a
+       ^--- try one parser, if that fails try the other parser
+
+    failure :: Parser a
+       ^--- always fail
+
+    char :: Parser Char
+       ^--- read one character from the input
+-}
+
+
+
+-- Examples:
+
+expectChar :: Char -> Parser ()
+expectChar c = do c' <- char
+                  if c == c' then return () else failure
+
+string :: String -> Parser ()
+string str = for_ str (\c -> expectChar c)
+
+
+boolean :: Parser Bool
+boolean =
+  do string "True"
+     return True
+  `orElse`
+  do string "False"
+     return False
+
+boolean2 :: Parser (Bool, Bool)
+boolean2 = do
+  expectChar '('
+  l <- boolean
+  expectChar ','
+  r <- boolean
+  expectChar ')'
   return (l, r)
 
--- Sequencing! Monads!
+eof :: Parser ()
+eof = MkParser go where
+
+  go [] = Just ((), "")
+  go _ = Nothing
+
+{- PLAN: write a parser for an expression language using the combinators. -}
+
+-- 1. Fix a grammar
+
+{-   <expr> ::= <mulexpr> + <expr>
+              | <mulexpr>
+
+     <mulexpr> ::= <baseexpr> * <mulexpr>
+                 | <baseexpr>
+
+     <baseexpr> ::= <number>
+                  | <variable>
+                  | <variable> ( <expr>* )     { separated by commas }
+                  | ( <expr> )
+
+     <number> ::= [0-9]+
+      (one or more of characters in 0 .. 9)
+
+     <variable> ::= [A-Za-z]+
+      (one or more of alphabetic characters)
+-}
+
+data Expr
+  = Addition MultExpr Expr
+  | AMultExpr MultExpr
+  deriving Show
+
+data MultExpr
+  = Multiplication BaseExpr MultExpr
+  | ABaseExpr BaseExpr
+  deriving Show
+
+data BaseExpr
+  = Number Integer
+  | Variable String
+  | FunCall String [Expr]
+  | Parens Expr
+  deriving Show
+
+-- 2. Design an Abstract Syntax Tree type
+
+-- 2.1: the datatype
+
+-- 2.2: a simple evaluator
+
+whitespace = satisfies isSpace
+
+whitespaces = zeroOrMore whitespace
+
+expr :: Parser Expr
+expr =
+  do me <- multExpr
+     whitespaces
+     expectChar '+'
+     whitespaces
+     fe <- expr
+     return (Addition me fe)
+  `orElse`
+  do me <- multExpr
+     return (AMultExpr me)
+
+multExpr :: Parser MultExpr
+multExpr =
+  do be <- baseExpr
+     whitespaces
+     expectChar '*'
+     whitespaces
+     fe <- multExpr
+     return (Multiplication be fe)
+  `orElse`
+  do be <- baseExpr
+     return (ABaseExpr be)
+
+oneOrMore  :: Parser a -> Parser [a]
+zeroOrMore :: Parser a -> Parser [a]
+
+oneOrMore p = do
+  x <- p
+  xs <- zeroOrMore p
+  return (x : xs)
+
+zeroOrMore p = oneOrMore p `orElse` return []
+
+sepBy :: Parser () -> Parser a -> Parser [a]
+sepBy sep p =
+  do x <- p
+     xs <- zeroOrMore (do sep; p)
+     return (x:xs)
+  `orElse`
+  return []
+
+baseExpr :: Parser BaseExpr
+baseExpr =
+  do n <- number
+     return (Number n)
+  `orElse`
+  do fnm <- variable
+     whitespaces
+     expectChar '('
+     arguments <- sepBy (expectChar ',') expr
+     expectChar ')'
+     return (FunCall fnm arguments)
+  `orElse`
+  do v <- variable
+     return (Variable v)
+  `orElse`
+  do expectChar '('
+     whitespaces
+     e <- expr
+     whitespaces
+     expectChar ')'
+     return (Parens e)
+
+fullExpr :: Parser Expr
+fullExpr = do whitespaces; e <- expr; whitespaces; eof; return e
+
+number :: Parser Integer
+number = do
+  ds <- oneOrMore digit
+  return (read ds)
+
+satisfies :: (Char -> Bool) -> Parser Char
+satisfies pred = do
+  c <- char
+  if pred c then return c else failure
+
+digit = satisfies isDigit
+alpha = satisfies isAlpha
+
+variable :: Parser String
+variable = oneOrMore alpha
+
+-- 3. Write a parser, following the grammar
+
+-- 3.1: oneOrMore, alphabetic, number
+
+
+
+-- 3.2: expr, mulExpr, baseExpr
+
+-- 3.4: whitespace
