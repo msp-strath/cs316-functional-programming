@@ -1,8 +1,8 @@
-name:                CS316-Y2023
+name:                CS316-FP
 version:             0.1.0.1
 -- synopsis:
 -- description:
-homepage:            https://github.com/bobatkey/CS316-Y2022#readme
+homepage:            https://github.com/msp-strath/cs316-functional-programming
 license:             BSD3
 license-file:        LICENSE
 author:              Robert Atkey
@@ -13,7 +13,6 @@ build-type:          Simple
 cabal-version:       >=1.10
 extra-source-files:  README.md
 
--- executable hello-cs316
 library
   hs-source-dirs:      lecture-notes
   exposed-modules:     Week01,
