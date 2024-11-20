@@ -48,10 +48,11 @@ library
                        Week08,
                        Week08Problems,
                        Week08Solutions,
+                       Week08Live2023,
                        Week08Live,
                        Week09,
+                       Week09Live2023,
                        Week09Live,
-                       Week09Lecture,
                        Week10
 --  ghc-options:         -fwarn-incomplete-patterns
   default-language:    Haskell2010

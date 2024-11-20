@@ -1,5 +1,6 @@
+{-# LANGUAGE InstanceSigs #-}
 {-# OPTIONS_GHC -fwarn-incomplete-patterns #-}
-module Week08Live where
+module Week08Live2023 where
 
 import Data.Char          (toUpper, isDigit, digitToInt, isSpace, isAlpha)
 import Data.Foldable      (for_)
