@@ -117,7 +117,7 @@ instance Functor f => Functor (Rec f) where
 
 
 type Void = Fix Rec ()
-absurd :: Void -> Void
+absurd :: Void -> a
 absurd (MkFix (MkRec v)) = absurd v
 
 instance Encodable [] where
