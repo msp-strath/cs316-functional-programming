@@ -61,5 +61,6 @@ The notes are Haskell files with interleaved code and commentary. You are encour
   - [Live Lecture Code (2024)](lecture-notes/Week09Lecture.hs)
 - [Week 10](lecture-notes/Week10.hs) : Lazy Evaluation and Infinite Data
   - [Live Lecture Code (Tuesday)](lecture-notes/Week10Live.hs) on deriving `Functor` by type-level programming.
+  - [Live Lecture Code (Friday)](lecture-notes/Week10Live2.hs) on testing with QuickCheck.
 
 You can take a look at [last year's repository](https://github.com/bobatkey/CS316-2022) and [the one before that](https://github.com/bobatkey/CS316-2021) for similar notes and some different exercises.
