@@ -14,7 +14,7 @@ import Data.List
 -- text, bold, italic, concat
 
 
--- DEFINE an example: hello world (with some random
+-- DEFINE an example: hello world (with some random formatting)
 
 
 -- DISCUSS syntax vs. semantics based on example
