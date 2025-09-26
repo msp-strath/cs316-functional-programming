@@ -67,3 +67,7 @@ import Data.List
 
 
 -- DISCUSS (and DEFINE?) escapeHTML
+
+
+
+-- DISCUSS generalising Markup?
