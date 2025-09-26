@@ -22,10 +22,13 @@ The lecture notes for this course are intended to accompany the video lectures (
 
 The notes are Haskell files with interleaved code and commentary. You are encouraged to experiment by loading these files into `ghci` (using `cabal repl`) and editing them. Each week also has a set of tutorial questions with solutions that you should have a go at to test your knowledge.
 
-- [Week 1](lecture-notes/Week01.hs) : Data and Functions
+### Week 1
+
+- [Lecture notes](lecture-notes/Week01.hs) : Data and Functions
 - [Tutorial Problems](lecture-notes/Week01Problems.hs)
 - [Tutorial Solutions](lecture-notes/Week01Solutions.hs)
 - [Live Lecture code (Tuesday)](lecture-notes/Week01Live.hs)
+
 <!--
 - [Live Lecture code (Friday)](lecture-notes/Week01Lecture2.hs)
 - [Week 2](lecture-notes/Week02.hs) : Solving Problems by Recursion
