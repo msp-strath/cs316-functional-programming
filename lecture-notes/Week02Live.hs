@@ -58,7 +58,7 @@ makeChange _ _ = Nothing
 
 
 -- TEST new version
--- TEST with precondition
+-- TEST with precondition (==>)
 -- TEST with better inputs
 
 
