@@ -14,13 +14,23 @@ import Test.QuickCheck
 -- DEFINE Till
 -- DEFINE Amount
 -- DEFINE Change
-
-
+type Coin = Int
+type Till = [Coin]
+type Amount = Int
+type Change = [Coin]
 
 -- DISCUSS how Till, Change, Coin, Amount relate
 -- (e.g. define a function turning X into Y)
 
+tillTotal :: Till -> Amount
+tillTotal = sum
+{-
+tillTotal [] = 0
+tillTotal (c : cs) = c + tillTotal cs
+-}
 
+changeTotal :: Change -> Amount
+changeTotal = sum
 
 -- PONDER makeChange, a function that takes:
 -- a till
@@ -33,22 +43,37 @@ import Test.QuickCheck
 -- Till with exactly the right coin
 -- Till with [1..10] and amount of 55
 
+noCoin :: Bool
+noCoin = makeChange [1..10] 0 [] == Just []
+
+rightCoin :: Bool
+rightCoin = (makeChange [5] 5 []) == Just [5]
+
+wholeTill :: Bool
+wholeTill = (makeChange [1..15] 55 []) == Just [1..10]
+
 -- 2. Property testing
 -- What property do we expect the outcome to verify?
 
+prop_makeChange1 :: Till -> Amount -> Property
+prop_makeChange1 till amount
+  = let res = makeChange (map abs till) (abs amount) [] in
+    isJust res ==> changeTotal (fromMaybe [] res) == abs amount
 
-
-
+{-
+prop_makeChange2 :: Till -> Amount -> Bool
+prop_makeChange2 till amount =
+  tillTotal till >= changeTotal (makeChange till amount [])
+-}
 -- DEFINE makeChange
 
+makeChange :: Till -> Amount -> Change -> Maybe Change
+makeChange _ 0 acc = Just (reverse acc)
+makeChange (coin:till) n acc
+  | n >= coin = makeChange till (n-coin) (coin:acc)
+  | otherwise = makeChange till n acc
+makeChange [] n acc = Nothing
 
-
-makeChange :: [Int] -> Int -> Maybe [Int]
-makeChange _ 0 = Just []
-makeChange (c : cs) n
-  | c <= n    = (c :) <$> makeChange cs (n - c)
-  | otherwise = makeChange cs n
-makeChange _ _ = Nothing
 
 -- TEST makeChange
 -- quickCheck, verboseCheck
