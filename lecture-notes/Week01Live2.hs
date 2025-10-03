@@ -100,6 +100,9 @@ set' = between (Text "[") (Text "]") . punctuate (Text ",")
 between :: Markup -> Markup -> (Markup -> Markup)
 between left right = \ middle -> catMarkup [left, middle, right]
 
+string :: Markup -> Markup
+string m = between (Text "\"") (Text "\"") m
+
 ------------------------------------------------------------------------------
 -- A small Markup semantics
 
