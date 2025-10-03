@@ -1,6 +1,7 @@
 {-# OPTIONS_GHC -fwarn-incomplete-patterns #-}
 module Week02Live where
 
+import Data.Maybe
 import Test.QuickCheck
 
 ------------------------------------------------------------------------
@@ -42,14 +43,23 @@ import Test.QuickCheck
 
 
 
+makeChange :: [Int] -> Int -> Maybe [Int]
+makeChange _ 0 = Just []
+makeChange (c : cs) n
+  | c <= n    = (c :) <$> makeChange cs (n - c)
+  | otherwise = makeChange cs n
+makeChange _ _ = Nothing
 
 -- TEST makeChange
-
+-- quickCheck, verboseCheck
 
 
 -- FIX (?) makeChange
 
 
+-- TEST new version
+-- TEST with precondition
+-- TEST with better inputs
 
 
 -- REFACTOR (?) makeChange
