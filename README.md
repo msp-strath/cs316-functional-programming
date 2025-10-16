@@ -42,6 +42,8 @@ The notes are Haskell files with interleaved code and commentary. You are encour
 - [Lecture notes](lecture-notes/Week03.hs) : Higher Order Functions
 - [Tutorial Problems](lecture-notes/Week03Problems.hs)
 - [Tutorial Solutions](lecture-notes/Week03Solutions.hs)
+- [Live Lecture code (Tuesday)](lecture-notes/Week03Live.hs)
+- [Live Lecture code (Friday)](lecture-notes/Week03LiveFri.hs)
 
 ### Week 4
 
