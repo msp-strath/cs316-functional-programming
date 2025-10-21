@@ -10,7 +10,7 @@ import Data.Char
 ------------------------------------------------------------------------
 -- TYPES TYPES TYPES
 
--- “Make Illegal States Unrepresentable”
+-- “Make Illegal States Unrepresentable” (OCaml / Jane Street)
 
 -- “Billion Dollar Mistake”
 --   NULL
@@ -27,20 +27,30 @@ import Data.Char
 ------------------------------------------------------------------------
 -- "Make Illegal States Unrepresentable"
 
--- DEFINE Meters, Seconds, MetresPerSecond
+-- DEFINE Metres, Seconds, MetresPerSecond
 
--- distanceToTheMoon :: Metres
--- distanceToTheMoon = MkMetres 34987394875
+newtype Metres = MkMetres { getMetres :: Integer }
+newtype Seconds = MkSeconds { getSeconds :: Integer }
+newtype MetresPerSecond = MkMetresPerSecond { getMetresPerSecond :: Double }
 
--- DEFINE secondsInAnHour :: Seconds
+distanceToTheMoon :: Metres
+distanceToTheMoon = MkMetres 34987394875
 
+secondsInAnHour :: Seconds
+secondsInAnHour = MkSeconds (60*60)
 
--- DEFINE computeSpeed
+computeSpeed :: Metres -> Seconds -> MetresPerSecond
+computeSpeed (MkMetres d) (MkSeconds s)
+  = MkMetresPerSecond (fromIntegral d / fromIntegral s)
 
 
 -- F# programming language from Microsoft
 --   units of measure types built in
 
+
+
+------------------------------------------------------------------------
+-- "Parse, don't validate"
 
 {- public class Student {
       // name is not null
@@ -56,12 +66,6 @@ import Data.Char
 -}
 
 
-
-
-------------------------------------------------------------------------
--- "Parse, don't validate"
-
-
 newtype DSUsername = MkDSUsername String
 newtype RegistrationNumber = MkRegistrationNumber String
 
@@ -70,21 +74,35 @@ newtype RegistrationNumber = MkRegistrationNumber String
 
 -- DEFINE These
 
+data These a b
+  = This a
+  | That b
+  | These a b
+
+
 -- DEFINE Student
 
-data Student = MkStudent
-  { name    :: String
-  , regInfo :: These DSUsername RegistrationNumber
+data Student' k = MkStudent
+  { name :: String
+  , uniqueID :: k DSUsername RegistrationNumber
   }
 
+type Student = Student' These
+type SuperStudent = Student' (,)
+
+mkSuper :: Student -> IO SuperStudent
+mkSuper = undefined
+
 -- GIVE an example of a student
-
-
--- DEFINE mkRegistrationNumber :: String -> Maybe RegistrationNumber
+gallais :: Student
+gallais = MkStudent "Guillaume Allais" (This (MkDSUsername "clb11207"))
 
 
 -- DISCUSS *abstract* datatypes and module interfaces
 
+-- mkDSUSername :: String -> IO (Maybe DSUsername)
+
+-- module StudentID (Student, DSUsername, getDSUsername, Registration)
 
 
 
@@ -94,8 +112,16 @@ data Student = MkStudent
 
 -- DEFINE MyShow
 
+class MyShow a where
+   myShow :: a -> String
+
 -- DEFINE case insensitive strings & add Show / Eq instance
 
+
+newtype CaseInsensitiveString = MKCIString String
+
+instance MyShow CaseInsensitiveString where
+   myShow (MKCIString str) = map toUpper str
 
 
 
@@ -113,7 +139,40 @@ class Semigroup m where
   (<>) :: m -> m -> m
 -- DISCUSS laws
 
+-- associativity - (x <> y) <> z = x <> (y <> z)
+
+instance Semigroup [a] where
+  (<>) = (++)
+
+newtype Tsil a = MkTsil { getTsil :: [a] } deriving Show
+
+instance Semigroup (Tsil a) where
+  MkTsil xs <> MkTsil ys = ys ++ xs
+
+newtype Empty a = MkEmpty { getEmpty :: [a] } deriving Show
+
+instance Semigroup (Empty a) where
+  _ <> _ = MkEmpty []
+
+newtype Sum = MkSum {getSum :: Int} deriving Show
+
+instance Semigroup Sum where
+  MkSum n <> MkSum m = MkSum (n + m)
+
+newtype Prod = MkProd {getProd :: Int} deriving Show
+
+instance Semigroup Prod where
+  MkProd n <> MkProd m = MkProd (n*m)
+
+newtype Max = MkMax {getMax :: Int} deriving Show
+
+instance Semigroup Max where
+  MkMax n <> MkMax m = MkMax (max n m)
+
+
 -- DEFINE various instances
+
+
 
 test :: Semigroup m => (Int -> m) -> m
 test f = f 0 <> f 1 <> f 2
