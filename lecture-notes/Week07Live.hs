@@ -22,14 +22,12 @@ ifThenElse False x y = y
 
 {-    WEEK 7 : MONADS
 
-   Last week we saw three examples of how to simulate side effects
+   Last week we saw two examples of how to simulate side effects
    with "pure" code in Haskell:
 
      1. simulating exceptions using the 'Maybe' type,
 
-     2. simulating mutable state by explicit state passing, and
-
-     3. simulating printing by collecting outputs.
+     2. simulating printing by collecting outputs.
 
    This week, we look at the common pattern in all these examples, and
    give it a name: 'Monad'. -}
@@ -61,23 +59,56 @@ class Monad m where
   (>>=)  :: m a -> (a -> m b) -> m b   --- pronounced 'bind'
 
 -- DEFINE Maybe monad
-
+instance Monad Maybe where
+  return = Just
+  Nothing >>= k = Nothing -- k stands for 'kontinuation'
+  Just v >>= k  = (k v)
 
 -- DISCUSS laws
+-- return v >>= k = k v
+-- c >>= return   = c
+-- (c >>= k1) >>= k2 = c >>= (\x -> k1 x >>= k2)
+
+apply :: Maybe (a -> b) -> Maybe a -> Maybe b
+apply mf mx =
+    mf >>= \f ->
+    mx >>= \x ->
+    return (f x)
 
 
+apply2 :: Maybe (a -> b) -> Maybe a -> Maybe b
+apply2 mf mx =
+  do f <- mf
+     x <- mx
+     return (f x)
 
 -- DEFINE apply :: Maybe (a -> b) -> Maybe a -> Maybe b
 -- USING >>= explicitly
 
 
+
 -- DEFINE filterM :: (a -> Maybe Bool) -> [a] -> Maybe [a]
 -- USING >>= explicitly
 
+filterM :: (a -> Maybe Bool) -> [a] -> Maybe [a]
+filterM p []     = return []
+filterM p (x:xs) =
+    p x >>= \b ->
+    filterM p xs >>= \xs' ->
+    return (if b then x:xs' else xs')
 
+filterM2 :: (a -> Maybe Bool) -> [a] -> Maybe [a]
+filterM2 p []     = return []
+filterM2 p (x:xs) =
+    do b   <- p x
+       xs' <- filterM2 p xs
+       return (if b then x:xs' else xs')
 
 ------------------------------------------------------------------------
 -- do Notation
+
+
+
 
 -- REFACTOR apply_v2
 -- USING do notations
@@ -92,12 +123,52 @@ class Monad m where
 
 -- DEFINE State Monad
 
+newtype State s a
+  = MkState { runState :: s -> (s, a) }
+
+instance Monad (State s) where
+  return v = MkState (\ s0 -> (s0, v))
+  MkState act1 >>= k = MkState $ \ s0 ->
+    let (s1, va) = act1 s0 in
+    let MkState act2 = k va in
+    let res@(s2, vb) = act2 s1 in
+    res
+
 -- DEFINE apply_v3 for the State Monad
 -- USING do notations
+
+apply3 :: State s (a -> b) -> State s a -> State s b
+apply3 mf mx =
+  do f <- mf
+     x <- mx
+     return (f x)
 
 -- DEFINE filterM_v3 for the State Monad
 -- USING do notations
 
+filterM3 :: (a -> State s Bool) -> [a] -> State s [a]
+filterM3 p []     = return []
+filterM3 p (x:xs) =
+    do b   <- p x
+       xs' <- filterM3 p xs
+       return (if b then x:xs' else xs')
+
+{-
+ghci> filterM2 (\ i -> if i == 0 then Nothing else Just True) [1..10]
+Just [1,2,3,4,5,6,7,8,9,10]
+ghci> filterM2 (\ i -> if i == 0 then Nothing else Just (i `mod` 2 == 0)) [1..10]
+Just [2,4,6,8,10]
+ghci> filterM2 (\ i -> if i == 0 then Nothing else Just (i `mod` 2 == 0)) [0..10]
+Nothing
+
+ghci> runState (filterM3 (\ i -> MkState (\ s -> (1+s, i<s))) [0..10]) 0
+(11,[])
+ghci> runState (filterM3 (\ i -> MkState (\ s -> (1+s, i<s))) [0..10]) 1
+(12,[0,1,2,3,4,5,6,7,8,9,10])
+ghci> runState (filterM3 (\ i -> MkState (\ s -> (1+s, i<s))) [0,2..10]) 1
+(7,[0])
+ghci> runState (filterM3 (\ i -> MkState (\ s -> (1+s, i<s))) [0,2..10]) 3
+-}
 
 -- DISCUSS similarities
 
