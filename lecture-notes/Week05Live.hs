@@ -265,7 +265,7 @@ instance Monoid (First a) where
 
 -- newtype
 
--- EXAMPES
+-- EXAMPLES
 
 
 
@@ -274,22 +274,80 @@ instance Monoid (First a) where
 class Foldable t where
   fold :: Monoid m => t m -> m
 
-data Formula a = Atom a | IsTrue | And (Formula a) (Formula a)
-
+data Formula a
+  = Atom a
+  | IsTrue
+  | And (Formula a) (Formula a)
+  deriving (Show, Eq, Arbitrary)
 
 instance Foldable Formula where
-   fold (Atom x) = x
-   fold IsTrue   = mempty
-   fold (And e f) = fold e <> fold f
+   fold (Atom x)  = foldList [x]
+   fold IsTrue    = foldList []
+   fold (And e f) = foldList [fold e, fold f]
 
 
-allAtoms :: Formula a -> [a]
-allAtoms = fold . fmap (\ a -> [a])
 -- DEFINE various instances
-
+mapFormula :: (a -> b) -> Formula a -> Formula b
+mapFormula f (Atom x) = Atom (f x)
+mapFormula f IsTrue   = IsTrue
+mapFormula f (And l r) = And (mapFormula f l) (mapFormula f r)
 
 -- DEFINE Functor
+
+class Functor f where
+  fmap :: (a -> b) -> (f a -> f b)
+
+  -- laws:
+prop_IdentityLaw :: (Eq (f a), Functor f) => (Int -> f Int) -> f a -> Bool
+prop_IdentityLaw _ t = fmap id t == t
+
+prop_CompositionLaw
+  :: (Eq (f c), Functor f)
+  => (Int -> f Int)
+  -> (a -> b) -> (b -> c) -> f a
+  -> Bool
+prop_CompositionLaw _ first second t =
+  fmap second (fmap first t) == fmap (second . first) t
+
 -- DEFINE various instances
 
+instance Functor Formula where
+  fmap = mapFormula
+
+instance Functor [] where
+  fmap = map
 
 -- EXAMPLES foldMap
+
+allVars :: Formula a -> [a]
+allVars f = fold (fmap (\ x -> [x]) f)
+
+foldMap
+  :: (Foldable t, Functor t, Monoid m)
+  => (a -> m) -> t a -> m
+foldMap f t = fold (fmap f t)
+
+allVars' :: Formula a -> [a]
+allVars' = foldMap (\ x -> [x])
+
+myFormula :: Formula String
+myFormula = And (And IsTrue (Atom "first")) (And (Atom "second") (Atom "third"))
+
+countVars :: Formula a -> Int
+countVars = getSum . foldMap (const $ MkSum 1)
+
+newtype And = MkAnd { getAnd :: Bool } deriving (Eq, Show, Ord, Arbitrary)
+
+instance Semigroup And where
+  MkAnd b <> MkAnd c = MkAnd (b && c)
+
+newtype Or = MkOr { getOr :: Bool } deriving (Eq, Show, Ord, Arbitrary)
+
+instance Semigroup Or where
+  MkOr b <> MkOr c = MkOr (b || c)
+
+instance Monoid And where
+  mempty = MkAnd True
+
+isClosed :: Formula a -> Bool
+isClosed = getAnd . foldMap (const $ MkAnd False)
