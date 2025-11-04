@@ -62,13 +62,15 @@ The notes are Haskell files with interleaved code and commentary. You are encour
 - [Lecture notes](lecture-notes/Week06.hs) : Simulating side-effects: Exceptions, State, and Printing
 - [Tutorial Problems](lecture-notes/Week06Problems.hs)
 - [Tutorial Solutions](lecture-notes/Week06Solutions.hs)
+- [Live Lecture code (Tuesday and Friday)](lecture-notes/Week06Live.hs)
+
+### Week 7
+- [Lecture notes](lecture-notes/Week07.hs) : Monads
+- [Tutorial Problems](lecture-notes/Week07Problems.hs)
+- [Tutorial Solutions](lecture-notes/Week07Solutions.hs)
 
 <!--
-- [Live Lecture code (Tuesday and Friday)](lecture-notes/Week06Live.hs)
-- [Week 7](lecture-notes/Week07.hs) : Monads
-  - [Tutorial Problems](lecture-notes/Week07Problems.hs)
-  - [Tutorial Solutions](lecture-notes/Week07Solutions.hs)
-  - [Live Lecture Notes (Tuesday)](lecture-notes/Week07Live.hs)
+- [Live Lecture Notes (Tuesday)](lecture-notes/Week07Live.hs)
 - [Week 8](lecture-notes/Week08.hs) : Real I/O and Parser Combinators
   - [Tutorial Problems](lecture-notes/Week08Problems.hs)
   - [Tutorial Solutions](lecture-notes/Week08Solutions.hs)
