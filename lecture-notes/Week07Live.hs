@@ -10,6 +10,8 @@ import Prelude hiding ( Monad (..)
                       , (<$>))
 import Data.Char      (isDigit, digitToInt)
 
+import Data.Monoid
+
 {- This is needed due to the RebindableSyntax extension. I'm using this
    extension so the 'do' notation in this file uses my redefined
    'Monad' type class, not the standard library one. RebindableSyntax
@@ -90,11 +92,11 @@ apply2 mf mx =
 -- DEFINE filterM :: (a -> Maybe Bool) -> [a] -> Maybe [a]
 -- USING >>= explicitly
 
-filterM :: (a -> Maybe Bool) -> [a] -> Maybe [a]
-filterM p []     = return []
-filterM p (x:xs) =
+filterMaybe :: (a -> Maybe Bool) -> [a] -> Maybe [a]
+filterMaybe p []     = return []
+filterMaybe p (x:xs) =
     p x >>= \b ->
-    filterM p xs >>= \xs' ->
+    filterMaybe p xs >>= \xs' ->
     return (if b then x:xs' else xs')
 
 filterM2 :: (a -> Maybe Bool) -> [a] -> Maybe [a]
@@ -153,6 +155,16 @@ filterM3 p (x:xs) =
        xs' <- filterM3 p xs
        return (if b then x:xs' else xs')
 
+pack :: Int -> [Int] -> [Int]
+pack capacity items
+  = snd $ runState (filterM3 decision items) capacity
+
+  where
+    decision :: Int -> State Int Bool
+    decision item = MkState $ \ capacity ->
+      if item <= capacity then (capacity - item, True)
+      else (capacity, False)
+
 {-
 ghci> filterM2 (\ i -> if i == 0 then Nothing else Just True) [1..10]
 Just [1,2,3,4,5,6,7,8,9,10]
@@ -175,6 +187,20 @@ ghci> runState (filterM3 (\ i -> MkState (\ s -> (1+s, i<s))) [0,2..10]) 3
 ------------------------------------------------------------------------
 -- One function to rule them all
 
+applyM :: Monad m => m (a -> b) -> m a -> m b
+applyM mf mx =
+  do f <- mf
+     x <- mx
+     return (f x)
+
+
+filterM :: Monad m => (a -> m Bool) -> [a] -> m [a]
+filterM p []     = return []
+filterM p (x:xs) =
+    do b   <- p x
+       xs' <- filterM p xs
+       return (if b then x:xs' else xs')
+
 
 -- DEFINE apply_v4 for all Monads
 -- USING do notations
@@ -196,11 +222,66 @@ ghci> runState (filterM3 (\ i -> MkState (\ s -> (1+s, i<s))) [0,2..10]) 3
 --         -> m [a]
 -- using filterM
 
+treeSort :: Monad m
+        => (a -> a -> m Bool)
+        -> [a]
+        -> m [a]
+treeSort cmp [] = return []
+treeSort cmp (v : vs) = do
+  smoll <- filterM (\ w -> cmp w v) vs
+  biggg <- filterM (\ w -> do { b <- cmp w v; return (not b) }) vs
+  leftt <- treeSort cmp smoll
+  right <- treeSort cmp biggg
+  return (leftt ++ [v] ++ right)
+
+newtype Identity a = MkIdentity { runIdentity :: a }
+
+instance Monad Identity where
+  return v = MkIdentity v
+  MkIdentity v >>= f = f v
+
+newtype Count m a = MkCount { runCount :: (m, a) }
+
+instance Monoid m => Monad (Count m) where
+  return v = MkCount (mempty, v)
+  MkCount (m1, v1) >>= k =
+    let MkCount (m2, v2) = k v1 in
+    MkCount (m1 <> m2, v2)
 
 
+tick :: a -> Count (Sum Int) a
+tick v = MkCount (Sum 1, v)
 
+getCount :: Count m a -> m
+getCount (MkCount (m, _)) = m
 
 -- DEFINE the Count Monad (for complexity analysis)
+
+complexity
+  :: (a -> a -> Bool)
+  -> [a]
+  -> Int
+complexity cmp xs =
+  let c = treeSort (\ v w -> tick (cmp v w)) xs in
+  getSum $ getCount c
+
+logg :: (Show a, Show b)
+     => (a -> b -> c)
+     -> (a -> b -> IO c)
+logg cmp a b = do
+  let str = unwords ["Checking", show a, "against", show b]
+  putStrLn str
+  return (cmp a b)
+
+logging
+  :: Show a
+  => (a -> a -> Bool)
+  -> [a]
+  -> IO ()
+logging cmp xs = do
+  _ <- treeSort (logg cmp) xs
+  return ()
+
 
 
 -- DEFINE mapM, mapM_, forM_, etc.
