@@ -68,12 +68,15 @@ The notes are Haskell files with interleaved code and commentary. You are encour
 - [Lecture notes](lecture-notes/Week07.hs) : Monads
 - [Tutorial Problems](lecture-notes/Week07Problems.hs)
 - [Tutorial Solutions](lecture-notes/Week07Solutions.hs)
+- [Live Lecture Notes (Tuesday and Friday)](lecture-notes/Week07Live.hs)
+- [Live Lecture Notes with IO shenanigans](lecture-notes/Week07IO.hs)
+
+### Week 8
+- [Lecture notes](lecture-notes/Week08.hs) : Real I/O and Parser Combinators
+- [Tutorial Problems](lecture-notes/Week08Problems.hs)
+- [Tutorial Solutions](lecture-notes/Week08Solutions.hs)
 
 <!--
-- [Live Lecture Notes (Tuesday)](lecture-notes/Week07Live.hs)
-- [Week 8](lecture-notes/Week08.hs) : Real I/O and Parser Combinators
-  - [Tutorial Problems](lecture-notes/Week08Problems.hs)
-  - [Tutorial Solutions](lecture-notes/Week08Solutions.hs)
   - [Live Lecture Notes (2023)](lecture-notes/Week08Live2023.hs)
   - [Live Lecture Notes (2024)](lecture-notes/Week08Live.hs)
 - [Week 9](lecture-notes/Week09.hs) : Data Dependencies and Applicative Functors
