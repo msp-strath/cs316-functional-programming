@@ -2,7 +2,7 @@
 {-# LANGUAGE InstanceSigs, DeriveFunctor #-}
 module Week08Live where
 
-import Control.Monad (ap)
+import Control.Monad (ap, forM)
 
 import Prelude hiding (putChar, getChar)
 import Data.Char          (toUpper, isDigit, digitToInt, isSpace, isAlpha)
@@ -13,6 +13,8 @@ import Control.Exception  (finally)
 import System.IO          (openFile, hPutChar, hGetChar, stdin, stdout,
                            hClose, IOMode (..), hIsEOF, Handle)
 
+import Debug.Trace
+
 {-    WEEK 8 : REAL I/O and PARSER COMBINATORS -}
 
 {-    Part 8.1 : I/O Conceptually
@@ -21,22 +23,108 @@ import System.IO          (openFile, hPutChar, hGetChar, stdin, stdout,
 
 -- DEFINE IOAction as a Monad
 
+-- Do some IO and (hopefully) eventually deliver an a-value
+data IOAction a
+  = End a
+  | GetChar ()   (Char -> IOAction a)
+  | PutChar Char (()   -> IOAction a)
+
+instance Show a => Show (IOAction a) where
+  show (End a) = show a
+  show (GetChar () k) = "GetChar"
+  show (PutChar c k) = "PutChar " ++ [c]
+
+instance Functor IOAction where
+  fmap f io = case io of
+    End a -> End (f a)
+    GetChar () k -> GetChar () (fmap f . k)
+    PutChar c  k -> PutChar c  (fmap f . k)
+
+instance Applicative IOAction where
+  pure = End
+  (<*>) = ap
+
+instance Monad IOAction where
+  (>>=) :: IOAction a -> (a -> IOAction b) -> IOAction b
+  End a         >>= k2 = k2 a
+  GetChar () k1 >>= k2 = GetChar () ((>>= k2) . k1)
+  PutChar c  k1 >>= k2 = PutChar c  ((>>= k2) . k1)
+
+getCharAction :: IOAction Char
+getCharAction = GetChar () End
+
+putCharAction :: Char -> IOAction ()
+putCharAction c = PutChar c End
+
+getPutCharAction :: IOAction ()
+getPutCharAction =
+  GetChar () (\ c -> PutChar c End)
+
+echo :: IOAction ()
+echo = do
+  c <- getCharAction
+  putCharAction c
+
+
+
 -- putChar :: Char -> ()
+
+test x = (z,z)
+   where z = x + 100
+
+--putChar :: Char -> Char
+--putChar x = x
+
+f x = (trace ("my character: " ++ [x]) (putChar x)
+      , trace ("my character: " ++ [x]) (putChar x))
+
+f2 x = (z,z)
+  where z = trace ("my character: " ++ [x]) (putChar x)
 
 -- DEFINE f, f2
 -- DISCUSS referential transparency
 
 
+
 -- DEFINE f', f2'
 
+f' x = do putChar x
+          putChar x
 
+
+f2' x = do z <- putChar x
+           return (z,z)
 -- DEFINE putChar
+
+putChar :: Char -> IO ()
+putChar  = hPutChar stdout
 
 -- DEFINE getChar
 
+getChar :: IO Char
+getChar = hGetChar stdin
+
+
 -- DEFINE printLine
 
+printLine :: String -> IO ()
+printLine ""     = putChar '\n'
+printLine (x:xs) = do putChar x
+                      printLine xs
+
+printLine1 :: String -> IO ()
+printLine1 str = do
+  _ <- traverse putChar str
+  putChar '\n'
+
 -- DEFINE readLine
+readLine :: IO String
+readLine = go []
+    where go xs = do c <- getChar
+                     if c == '\n' then return (reverse xs)
+                                  else go (c:xs)
+
+
 
 
 
@@ -145,6 +233,8 @@ import System.IO          (openFile, hPutChar, hGetChar, stdin, stdout,
       (one or more of alphabetic characters)
 -}
 
+
+{-
 data Expr
   = Addition MultExpr Expr
   | AMultExpr MultExpr
@@ -264,3 +354,4 @@ variable = oneOrMore alpha
 -- 3.2: expr, mulExpr, baseExpr
 
 -- 3.4: whitespace
+-}
