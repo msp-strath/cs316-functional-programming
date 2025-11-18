@@ -5,10 +5,7 @@ module Week09Live where
 import Control.Concurrent (forkIO, MVar, newEmptyMVar, putMVar, takeMVar)
 import Prelude hiding (mapM)
 import Data.Traversable   (for)
-import Network.HTTP       ( simpleHTTP
-                          , getRequest
-                          , getResponseBody
-                          )
+import qualified Network.HTTP as HTTP
 import Week08 (Parser, runParser, JSON (..), parseJSON)
 
 
@@ -16,7 +13,7 @@ import Week08 (Parser, runParser, JSON (..), parseJSON)
 
 {- Part 9.1 : Sequences of Actions -}
 
--- (>>=) :: Monad m =>  m a   -> (a -> m b) -> m b
+-- (>>=) :: Monad m =>   m a -> (a -> m b) -> m b
 -- forM  :: Monad m =>    [a] -> (a -> m b) -> m [b]
 
 -- DISCUSS dependencies between computations
@@ -30,14 +27,21 @@ import Week08 (Parser, runParser, JSON (..), parseJSON)
 
 
 
--- ap :: Monad m => m (a -> b) -> m a -> m b
-
+ap :: Monad m => m (a -> b) -> m a -> m b
+ap mf ma =
+  do f <- mf
+     a <- ma
+     return (f a)
 -- DEFINE ap
 -- DISCUSS dependencies between computations
 
 
 
 -- DEFINE mapM_v2 :: forall m a b. Monad m => (a -> m b) -> [a] -> m [b]
+mapM_v2 :: forall m a b. Monad m => (a -> m b) -> [a] -> m [b]
+mapM_v2 f []     = return []
+mapM_v2 f (x:xs) = return (:) `ap` (f x) `ap` mapM_v2 f xs
+
 -- using ap
 
 
@@ -67,10 +71,11 @@ class Functor m => Applicative m where
 
 -- DEFINE mapA :: Applicative f => (a -> f b) -> [a] -> f [b]
 
-
-
-
-
+mapA :: Applicative f => (a -> f b) -> [a] -> f [b]
+mapA f []     = pure []
+mapA f (x:xs)
+    = pure (:) <*> f x <*> mapA f xs
+--  =      (:) <$> f x <*> mapA f xs
 
 
 
@@ -78,26 +83,52 @@ class Functor m => Applicative m where
 
 -- DEFINE Request/response
 
--- DEFINE Fetch monad
-data Fetch a
-  = Done a
-  | Fetch [Request] ([Response] -> Fetch a)
+newtype Request  = MkRequest { getRequest :: String }
+  deriving (Show)
+newtype Response = MkResponse { getResponse :: String }
+  deriving (Show)
 
+-- DEFINE Fetch monad
+
+data Fetch' t a
+  = End a
+  | Ask (t Request) (t Response -> Fetch' t a)
+
+type Fetch = Fetch' []
+
+data Tree a = Node (Tree a) (Tree a) | Leaf a
 
 -- DEFINE Show instance (to the best of our ability)
-
-instance Show a => Show (Fetch a) where
-  show (Done a)       = "(Done " ++ show a ++ ")"
-  show (Fetch reqs _) = "(Fetch " ++ show reqs ++ " <continues...>)"
+instance (Show a, Show (t Request)) => Show (Fetch' t a) where
+  show (End a) = "Ended: " ++ show a
+  show (Ask reqs k) = "Requests: " ++ show reqs
 
 
 -- DEFINE makeRequest :: Request -> Fetch Response
 
+makeRequest :: Request -> Fetch Response
+makeRequest rq = Ask [rq] $ \ [rp] -> End rp
 
 -- DEFINE Monad & Applicative instances
 
+instance Monad Fetch where
+  return = End
+  (>>=) :: Fetch a -> (a -> Fetch b) -> Fetch b
+  End a >>= f = f a
+  Ask rqs k >>= f = Ask rqs ((>>= f) . k)
 
+instance Applicative Fetch where
+  pure = End
+  End f <*> mx = f <$> mx
+  mf <*> End x = ($ x) <$> mf
+  Ask rqs1 k1 <*> Ask rqs2 k2 =
+    Ask (rqs1 ++ rqs2) $ \ rsp ->
+      let (rsp1, rsp2) = splitAt (length rqs1) rsp in
+      k1 rsp1 <*> k2 rsp2
 
+instance Functor Fetch where
+  fmap f (End a) = End (f a)
+  fmap f (Ask rsq k) = Ask rsq (fmap f . k)
 
 --
 
@@ -118,6 +149,7 @@ instance Show a => Show (Fetch a) where
     takeMVar :: MVar a -> IO a
 -}
 
+{-
 -- Logger
 data LogMsg
   = Message String
@@ -196,3 +228,4 @@ runFetchWithLogger job =
      result <- runFetch log job
      logStop log
      return result
+-}

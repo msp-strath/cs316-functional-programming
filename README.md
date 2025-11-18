@@ -75,13 +75,15 @@ The notes are Haskell files with interleaved code and commentary. You are encour
 - [Lecture notes](lecture-notes/Week08.hs) : Real I/O and Parser Combinators
 - [Tutorial Problems](lecture-notes/Week08Problems.hs)
 - [Tutorial Solutions](lecture-notes/Week08Solutions.hs)
+- [Live Lecture code (2024)](lecture-notes/Week08Live.hs)
+
+### Week 9
+
+- [Lecture notes](lecture-notes/Week09.hs) : Data Dependencies and Applicative Functors
+- [Live Lecture code](lecture-notes/Week09Live.hs)
+
 
 <!--
-  - [Live Lecture Notes (2023)](lecture-notes/Week08Live2023.hs)
-  - [Live Lecture Notes (2024)](lecture-notes/Week08Live.hs)
-- [Week 9](lecture-notes/Week09.hs) : Data Dependencies and Applicative Functors
-  - [Live Lecture Code (2023)](lecture-notes/Week09Live.hs)
-  - [Live Lecture Code (2024)](lecture-notes/Week09Lecture.hs)
 - [Week 10](lecture-notes/Week10.hs) : Lazy Evaluation and Infinite Data
   - [Live Lecture Code (Tuesday)](lecture-notes/Week10Live.hs) on deriving `Functor` by type-level programming.
   - [Live Lecture Code (Friday)](lecture-notes/Week10Live2.hs) on testing with QuickCheck.
