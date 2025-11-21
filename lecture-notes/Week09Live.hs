@@ -1,10 +1,11 @@
-{-# LANGUAGE InstanceSigs #-}
+{-# LANGUAGE InstanceSigs, DataKinds, GADTs, StandaloneDeriving, RankNTypes #-}
 {-# OPTIONS_GHC -fwarn-incomplete-patterns #-}
 module Week09Live where
 
 import Control.Concurrent (forkIO, MVar, newEmptyMVar, putMVar, takeMVar)
 import Prelude hiding (mapM)
-import Data.Traversable   (for)
+import Data.Kind (Type)
+import Data.Traversable   (for, fmapDefault, foldMapDefault)
 import qualified Network.HTTP as HTTP
 import Week08 (Parser, runParser, JSON (..), parseJSON)
 
@@ -13,18 +14,10 @@ import Week08 (Parser, runParser, JSON (..), parseJSON)
 
 {- Part 9.1 : Sequences of Actions -}
 
--- (>>=) :: Monad m =>   m a -> (a -> m b) -> m b
--- forM  :: Monad m =>    [a] -> (a -> m b) -> m [b]
+-- (>>=) :: Monad m =>   m a  -> (a -> m b) -> m b
+-- forM  :: Monad m =>  [  a] -> (a -> m b) -> m [b]
 
 -- DISCUSS dependencies between computations
-
-
-
-
-
-
-
-
 
 
 ap :: Monad m => m (a -> b) -> m a -> m b
@@ -44,15 +37,6 @@ mapM_v2 f (x:xs) = return (:) `ap` (f x) `ap` mapM_v2 f xs
 
 -- using ap
 
-
-
-
-
-
-
-
-
-
 -- Let's abstract over this pattern!
 
 {- Part 9.2 : Applicative -}
@@ -64,10 +48,6 @@ class Functor m => Applicative m where
   pure  :: a -> m a
   (<*>) :: m (a -> b) -> m a -> m b
 -}
-
-
-
-
 
 -- DEFINE mapA :: Applicative f => (a -> f b) -> [a] -> f [b]
 
@@ -90,16 +70,32 @@ newtype Response = MkResponse { getResponse :: String }
 
 -- DEFINE Fetch monad
 
-data Fetch' t a
-  = End a
-  | Ask (t Request) (t Response -> Fetch' t a)
+data Tree
+  = Leaf
+  | Tree :/\: Tree
+  deriving Show
 
-type Fetch = Fetch' []
+data Batch (t :: Tree) (a :: Type) :: Type where
+  One    :: a                       -> Batch Leaf       a
+  (:++:) :: Batch l a ->  Batch r a -> Batch (l :/\: r) a
+deriving instance Show a => Show (Batch t a)
 
-data Tree a = Node (Tree a) (Tree a) | Leaf a
+instance Traversable (Batch t) where
+  traverse f (One a) = One <$> f a
+  traverse f (l :++: r) = (:++:) <$> traverse f l <*> traverse f r
+
+instance Foldable (Batch t) where
+  foldMap = foldMapDefault
+
+instance Functor (Batch t) where
+  fmap = fmapDefault
+
+data Fetch a where
+  End :: a -> Fetch a
+  Ask :: Batch t Request -> (Batch t Response -> Fetch a) -> Fetch a
 
 -- DEFINE Show instance (to the best of our ability)
-instance (Show a, Show (t Request)) => Show (Fetch' t a) where
+instance Show a => Show (Fetch a) where
   show (End a) = "Ended: " ++ show a
   show (Ask reqs k) = "Requests: " ++ show reqs
 
@@ -107,7 +103,7 @@ instance (Show a, Show (t Request)) => Show (Fetch' t a) where
 -- DEFINE makeRequest :: Request -> Fetch Response
 
 makeRequest :: Request -> Fetch Response
-makeRequest rq = Ask [rq] $ \ [rp] -> End rp
+makeRequest rq = Ask (One rq) $ \ (One rp) -> End rp
 
 -- DEFINE Monad & Applicative instances
 
@@ -122,17 +118,36 @@ instance Applicative Fetch where
   End f <*> mx = f <$> mx
   mf <*> End x = ($ x) <$> mf
   Ask rqs1 k1 <*> Ask rqs2 k2 =
-    Ask (rqs1 ++ rqs2) $ \ rsp ->
-      let (rsp1, rsp2) = splitAt (length rqs1) rsp in
+    Ask (rqs1 :++: rqs2) $ \ (rsp1 :++: rsp2) ->
       k1 rsp1 <*> k2 rsp2
 
 instance Functor Fetch where
   fmap f (End a) = End (f a)
   fmap f (Ask rsq k) = Ask rsq (fmap f . k)
 
---
 
--- runFetch :: Fetch a -> IO a
+runFetch
+  :: Monad m
+  => (forall t. Batch t Request -> m (Batch t Response))
+  -> Fetch a -> m a
+runFetch handle (End a) = return a
+runFetch handle (Ask rqs k) = do
+  rsp <- handle rqs
+  runFetch handle (k rsp)
+
+
+both :: Fetch (Response, Response)
+both = pure (,)
+  <*> makeRequest (MkRequest "github.com")
+  <*> makeRequest (MkRequest "instagram.com")
+
+
+runFetchIO
+  :: (Request -> IO Response)
+  -> Fetch a
+  -> IO a
+runFetchIO handleIO = runFetch $ traverse handleIO
+
 {-   PART 9.4 : Concurrency and Communication -}
 
 {-
