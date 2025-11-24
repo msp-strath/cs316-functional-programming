@@ -80,13 +80,11 @@ The notes are Haskell files with interleaved code and commentary. You are encour
 ### Week 9
 
 - [Lecture notes](lecture-notes/Week09.hs) : Data Dependencies and Applicative Functors
-- [Live Lecture code](lecture-notes/Week09Live.hs)
+- [Live Lecture code](lecture-notes/Week09Live.hs) on data (in)dependencies and GADTs
 
+### Week 10
 
-<!--
-- [Week 10](lecture-notes/Week10.hs) : Lazy Evaluation and Infinite Data
-  - [Live Lecture Code (Tuesday)](lecture-notes/Week10Live.hs) on deriving `Functor` by type-level programming.
-  - [Live Lecture Code (Friday)](lecture-notes/Week10Live2.hs) on testing with QuickCheck.
-!-->
+- [Lecture notes](lecture-notes/Week10.hs) : Lazy Evaluation and Infinite Data
+- [Live Lecture Code (Tuesday)](lecture-notes/Week10Live.hs) on concurrency
 
 You can take a look at [last year's notes](archives/) for similar notes and some different exercises.
