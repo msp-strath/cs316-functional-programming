@@ -54,7 +54,6 @@ makeRequest :: Request -> Fetch Response
 makeRequest rq = Ask (One rq) $ \ (One rp) -> End rp
 
 instance Monad Fetch where
-  return = End
   (>>=) :: Fetch a -> (a -> Fetch b) -> Fetch b
   End a >>= f = f a
   Ask rqs k >>= f = Ask rqs ((>>= f) . k)
@@ -106,7 +105,7 @@ runFetchIO handleIO = runFetch $ traverse handleIO
 
 handleHTTP :: Request -> IO Response
 handleHTTP req = do
-  res <- HTTP.simpleHTTP (HTTP.getRequest $ getRequest req)
+  res <- HTTP.simpleHTTP (HTTP.getRequest (getRequest req))
   MkResponse <$> HTTP.getResponseBody res
 
 
@@ -168,7 +167,7 @@ getTodosM = mapM getTodo todos
 {- The magic ingredients:
 
 -- Forks
-   forkIO
+   forkIO :: IO () -> IO ()
 
 -- MVars
 
@@ -192,21 +191,31 @@ oopsy = do
 -- 1 logger thread logging messages one by one
 -- Other threads sending their messages to it
 
-type Mailbox = MVar String
+data LogMsg = Message String | Stop
+  deriving Show
+
+type Mailbox = MVar LogMsg
 
 loggerMain :: Mailbox -> Int -> IO ()
-loggerMain inbox count = undefined
+loggerMain inbox count = do msg <- takeMVar inbox
+                            case msg of
+                                Message msg -> do  putStrLn ("LOG ( " ++ show count ++ " ) : " ++ msg)
+                                                   loggerMain inbox (count + 1)
+                                Stop        -> do  putStrLn "STOPPED"
+                                                   return()
 
 -- Going on forever? :(
 
 startLogger :: IO Mailbox
-startLogger = undefined
+startLogger = do ch <- newEmptyMVar
+                 forkIO (loggerMain ch 0)
+                 return ch
 
 logMsg :: Mailbox -> String -> IO ()
-logMsg log msg = undefined
+logMsg log msg = putMVar log (Message msg)
 
 logStop :: Mailbox -> IO ()
-logStop log = undefined
+logStop log = putMVar log Stop
 
 
 withLogger :: (Mailbox -> IO b) -> IO b
@@ -226,7 +235,8 @@ handleHTTPwithLogger log url =
      return body
 
 runFetchwithLogger :: Fetch a -> IO a
-runFetchwithLogger job = undefined
+runFetchwithLogger job = withLogger $ \ inbox ->
+  runFetchIO (handleHTTPwithLogger inbox) job
 
 
 ------------------------------------------------------------------------
@@ -242,4 +252,5 @@ parTraverse f t = do
   traverse takeMVar mboxes
 
 parRunFetchwithLogger :: Fetch a -> IO a
-parRunFetchwithLogger job = undefined
+parRunFetchwithLogger job = withLogger $ \ inbox ->
+  runFetch (parTraverse (handleHTTPwithLogger inbox)) job
