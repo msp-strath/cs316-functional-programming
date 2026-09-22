@@ -192,25 +192,65 @@ module Week01Live where
 -- Suits, and their colours
 
 -- exampleSuit :: Suit
+data Suit = Diamonds | Clubs | Hearts | Spades
+  deriving(Show, Enum, Bounded)
 
+exampleSuit :: Suit
+exampleSuit = Clubs
 
--- getColour :: Suit -> Colour
+data Colour = Red | Black
+  deriving Show
 
+getColour :: Suit -> Colour
+getColour Diamonds = Red
+getColour Clubs    = Black
+getColour Hearts   = Red
+getColour Spades   = Black
 
 ------------------------------------------------------------------------------
 -- Modeling ranks
+data Rank = Ace | Two | Three | Four | Five | Six | Seven | Eight | Nine |
+            Ten | Jack | Queen | King
+       deriving(Show, Enum, Eq, Ord)
 
--- numericValue :: Rank -> Int
+numericValue :: Rank -> Int
+numericValue x = case x of
+  Ace   -> 11
+  Two   -> 2
+  Three -> 3
+  Four -> 4
+  Five -> 5
+  Six -> 6
+  Seven -> 7
+  Eight -> 8
+  Nine -> 9
+  Ten -> 10
+  Jack -> 10
+  Queen -> 10
+  King -> 10
 
--- lessThanOrEqualValue :: Rank -> Rank -> Bool
-
+lessThanOrEqualValue :: Rank -> Rank -> Bool
+lessThanOrEqualValue r1 r2 = numericValue r1 <= numericValue r2
 
 ------------------------------------------------------------------------------
 -- A card is a suit together with a rank
 
+data Card = MkCard
+  { getSuit :: Suit
+  , getRank :: Rank
+  }
 
--- suitOfCard :: Card -> Suit
+suitOfCard :: Card -> Suit
+suitOfCard (MkCard s r) = s
 
+suitOfCard' :: Card -> Suit
+suitOfCard' = getSuit
+
+changeSuitOfCard :: Suit -> Card -> Card
+changeSuitOfCard s (MkCard _ r) = MkCard s r
+
+changeSuitOfCard' :: Suit -> Card -> Card
+changeSuitOfCard' s c = c { getSuit = s }
 
 ------------------------------------------------------------------------------
 -- Generating a deck
