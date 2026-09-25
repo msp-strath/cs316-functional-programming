@@ -2,6 +2,8 @@
 {-# LANGUAGE LambdaCase #-}
 module Week01Live where
 
+import Data.List (intersperse)
+
 {-    WELCOME TO
 
         CS316 λ>=
@@ -193,7 +195,7 @@ module Week01Live where
 
 -- exampleSuit :: Suit
 data Suit = Diamonds | Clubs | Hearts | Spades
-  deriving(Show, Enum, Bounded)
+  deriving(Show, Eq, Enum, Bounded)
 
 exampleSuit :: Suit
 exampleSuit = Clubs
@@ -211,7 +213,7 @@ getColour Spades   = Black
 -- Modeling ranks
 data Rank = Ace | Two | Three | Four | Five | Six | Seven | Eight | Nine |
             Ten | Jack | Queen | King
-       deriving(Show, Enum, Eq, Ord)
+       deriving(Show, Enum, Eq, Ord, Bounded)
 
 numericValue :: Rank -> Int
 numericValue x = case x of
@@ -239,6 +241,7 @@ data Card = MkCard
   { getSuit :: Suit
   , getRank :: Rank
   }
+ deriving(Show, Eq)
 
 suitOfCard :: Card -> Suit
 suitOfCard (MkCard s r) = s
@@ -255,15 +258,29 @@ changeSuitOfCard' s c = c { getSuit = s }
 ------------------------------------------------------------------------------
 -- Generating a deck
 
--- allSuits :: [Suit]
+allSuits :: [Suit]
+allSuits = [minBound..maxBound]
 
--- allRanks :: [Rank]
+allRanks :: [Rank]
+allRanks = [minBound..maxBound]
 
 -- Using a list comprehension
--- allCards :: [Card]
+allCards :: [Card]
+allCards = [MkCard suit rank | suit <- allSuits, rank <- allRanks]
 
 -- Using applicative notations
--- desk :: [Card]
+deck :: [Card]
+deck = pure MkCard <*> allSuits <*> allRanks
+{-
+  do suit <- allSuits
+     rank <- allRanks
+     pure (MkCard suit rank)
+-}
+
+
+
+
+
 
 
 
@@ -279,42 +296,70 @@ changeSuitOfCard' s c = c { getSuit = s }
 
 -- DEFINE data Markup
 -- text, bold, italic, concat
--- data Markup
+data Markup
+  = Text String
+  | Bold Markup
+  | Italic Markup
+  | Concat Markup Markup
+  deriving (Show)
 
--- smartConcat :: Markup -> Markup -> Markup
-
-
-
+smartConcat :: Markup -> Markup -> Markup
+smartConcat (Text str1) (Text str2) = Text (str1 ++ str2)
+smartConcat (Text "") doc = doc
+smartConcat doc (Text "") = doc
+-- Pro move
+-- smartConcat (Concat l m) r = smartConcat l (smartConcat m r)
+smartConcat l r = Concat l r
 
 -- DEFINE an example: hello world (with some random formatting)
+
+exampleMarkup :: Markup
+exampleMarkup =
+  smartConcat (smartConcat (Text "Hell") (Text "o"))
+         (smartConcat (Italic (Text " ")) (Bold (Text "World!")))
 
 -- DISCUSS syntax vs. semantics based on example
 -- REFACTOR (?)
 
--- Markdown: Hello **World**
--- HTML:     Hello <strong>World</strong>
+-- Markdown: Hello **World!**
+-- HTML:     Hello <strong>World!</strong>
+-- Forgetful:    Hello World!
 
+forgetful :: Markup -> String
+forgetful (Text str) = str
+forgetful (Bold doc) = forgetful doc
+forgetful (Italic doc) = forgetful doc
+forgetful (Concat doc1 doc2) = forgetful doc1 ++ forgetful doc2
 
 ------------------------------------------------------------------------------
--- DISCUSS Domain Specific Languages
+-- DISCUSS (Domain Specific) Languages
 -- Nouns: datatypes / ground values
 -- Verbs: functions
 
 
 -- DEFINE catMarkup
--- catMarkup :: [Markup] -> Markup
+catMarkup :: [Markup] -> Markup
+catMarkup [] = Text ""
+catMarkup [doc] = doc
+catMarkup (doc : docs) = Concat doc (catMarkup docs)
 
 -- DEFINE
 -- catMarkupSpaced [Text "hello", Text "world"]
 --   Concat (Text "hello") (Concat (Text " ") (Text "world"))
 
--- catMarkupSpaced :: [Markup] -> Markup
+catMarkupSpaced :: [Markup] -> Markup
+catMarkupSpaced []     = Text ""
+catMarkupSpaced [x]    = x
+catMarkupSpaced (x:xs) = catMarkup [x,(Text " "),catMarkupSpaced xs]
 
+catMarkupSpaced' :: [Markup] -> Markup
+catMarkupSpaced' docs = catMarkup (intersperse (Text " ") docs)
 
 -- REFACTOR using intersperse
 -- REFACTOR as punctuate
+
 punctuate :: Markup -> [Markup] -> Markup
-punctuate sep mks = catMarkup (intersperse sep mks)
+punctuate sep docs = catMarkup (intersperse sep docs)
 
 
 -- DEFINE list :: [Markup] -> Markup
