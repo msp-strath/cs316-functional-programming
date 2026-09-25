@@ -264,3 +264,77 @@ changeSuitOfCard' s c = c { getSuit = s }
 
 -- Using applicative notations
 -- desk :: [Card]
+
+
+
+
+
+------------------------------------------------------------------------------
+-- Beyond enumerations and lists
+
+-- A small Markup data structure
+-- Related work: This is the type of generic representation used in e.g. pandoc
+-- https://pandoc.org/
+
+
+-- DEFINE data Markup
+-- text, bold, italic, concat
+-- data Markup
+
+-- smartConcat :: Markup -> Markup -> Markup
+
+
+
+
+-- DEFINE an example: hello world (with some random formatting)
+
+-- DISCUSS syntax vs. semantics based on example
+-- REFACTOR (?)
+
+-- Markdown: Hello **World**
+-- HTML:     Hello <strong>World</strong>
+
+
+------------------------------------------------------------------------------
+-- DISCUSS Domain Specific Languages
+-- Nouns: datatypes / ground values
+-- Verbs: functions
+
+
+-- DEFINE catMarkup
+-- catMarkup :: [Markup] -> Markup
+
+-- DEFINE
+-- catMarkupSpaced [Text "hello", Text "world"]
+--   Concat (Text "hello") (Concat (Text " ") (Text "world"))
+
+-- catMarkupSpaced :: [Markup] -> Markup
+
+
+-- REFACTOR using intersperse
+-- REFACTOR as punctuate
+punctuate :: Markup -> [Markup] -> Markup
+punctuate sep mks = catMarkup (intersperse sep mks)
+
+
+-- DEFINE list :: [Markup] -> Markup
+-- DEFINE set  :: [Markup] -> Markup
+
+-- REFACTOR list, set using between
+
+------------------------------------------------------------------------------
+-- A small Markup semantics
+
+-- DEFINE HTML
+
+-- data HTML
+
+-- type Domain = [HTML]
+
+
+-- DEFINE markupToHTML
+-- markupToHTML :: Markup -> Domain
+
+-- DISCUSS (and DEFINE?) escapeHTML
+
+-- DISCUSS generalising Markup?
