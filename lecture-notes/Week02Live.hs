@@ -15,14 +15,28 @@ import Test.QuickCheck
 -- DEFINE Amount
 -- DEFINE Change
 
+type Coin = Amount
+type Amount = Int
+type Change = [Coin]
+type Till = [Coin]
+
 -- DISCUSS how Till, Change, Coin, Amount relate
 -- (e.g. define a function turning X into Y)
+tillTotal :: Till -> Amount
+tillTotal = sum
 
+changeAmount :: Change -> Amount
+changeAmount = sum
+
+validChange :: Maybe Change -> Amount -> Bool
+validChange Nothing amt = False
+validChange (Just chg) amt = changeAmount chg == amt
 
 -- PONDER makeChange, a function that takes:
 -- a till
 -- an amount
 -- and returns change matching the amount
+
 
 -- WRITE some tests
 
@@ -30,12 +44,34 @@ import Test.QuickCheck
 -- Till with exactly the right coin
 -- Till with [1..10] and amount of 55
 
+testVC :: Till -> Amount -> Bool
+testVC tl amt = validChange (makeChange tl amt) amt
+
+wholeTill :: Bool
+wholeTill = testVC [1..10] (tillTotal [1..10])
+
+lastCoin :: Bool
+lastCoin = testVC [1..10] 10
+
 -- 2. Property testing
 -- What property do we expect the outcome to verify?
 
-
+prop_VC :: Till -> Amount -> Property
+prop_VC tl amnt =
+  let mchng = makeChange tl amnt in
+  isJust mchng ==> testVC tl amnt
 
 -- DEFINE makeChange
+makeChange :: Till -> Amount -> Maybe Change
+makeChange tl amt = makeChangeAcc tl amt []
+
+makeChangeAcc :: Till -> Amount -> Change -> Maybe Change
+makeChangeAcc tl 0 hand = Just hand
+makeChangeAcc [] amt hand = Nothing
+makeChangeAcc (coin : tl) amt hand
+  | coin > amt = makeChangeAcc tl amt hand
+  | otherwise  = makeChangeAcc tl (amt - coin) (coin : hand)
+
 
 
 -- TEST makeChange

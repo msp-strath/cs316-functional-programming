@@ -361,11 +361,19 @@ catMarkupSpaced' docs = catMarkup (intersperse (Text " ") docs)
 punctuate :: Markup -> [Markup] -> Markup
 punctuate sep docs = catMarkup (intersperse sep docs)
 
+list :: [Markup] -> Markup
+list xs  = catMarkup [Text "[", punctuate (Text",") xs,  Text "]"]
 
--- DEFINE list :: [Markup] -> Markup
--- DEFINE set  :: [Markup] -> Markup
+list' :: [Markup] -> Markup
+list' = between (Text "[", Text "]")
+      . punctuate (Text ",")
 
+set  :: [Markup] -> Markup
+set xs = catMarkup [Text "{", punctuate (Text",") xs,  Text "}"]
 -- REFACTOR list, set using between
+
+between :: (Markup, Markup) -> Markup -> Markup
+between (left, right) middle = catMarkup [left, middle, right]
 
 ------------------------------------------------------------------------------
 -- A small Markup semantics

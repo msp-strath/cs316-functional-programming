@@ -19,13 +19,13 @@ library
                  , Week01Problems
                  , Week01Solutions
                  , Week01Live
-                -- , Week02
-                -- , Week02Problems
-                -- , Week02Solutions
-                -- , Week02Live
-                -- , Week03
-                -- , Week03Problems
-                -- , Week03Solutions
+                 , Week02
+                 , Week02Problems
+                 , Week02Solutions
+                 , Week02Live
+                 , Week03
+                 , Week03Problems
+                 , Week03Solutions
                 -- , Week03Live
                 -- , Week04
                 -- , Week04Problems
