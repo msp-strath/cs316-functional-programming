@@ -80,6 +80,10 @@ allSubsets (hd : tl) =
   let ih = allSubsets tl in
   map (\ subset -> hd : subset) ih ++ ih
 
+-- Generates a lot of lists! To be used with
+-- quickCheckWith (stdArgs {maxSize = 20}) prop_VC2
+-- verboseCheckWith (stdArgs {maxSize = 20}) prop_VC2
+
 prop_VC2 :: Till -> Amount -> Property
 prop_VC2 tl amnt =
   let subsets = allSubsets tl in
@@ -88,7 +92,7 @@ prop_VC2 tl amnt =
 
 -- DEFINE makeChange
 makeChange :: Till -> Amount -> Maybe Change
-makeChange tl amt = makeChangeAcc tl amt []
+makeChange tl amt = makeChangeAcc2 tl amt []
 
 makeChangeAcc :: Till -> Amount -> Change -> Maybe Change
 makeChangeAcc tl 0 hand = Just hand
@@ -97,6 +101,14 @@ makeChangeAcc (coin : tl) amt hand
   | coin > amt = makeChangeAcc tl amt hand
   | otherwise  = makeChangeAcc tl (amt - coin) (coin : hand)
 
+makeChangeAcc2 :: Till -> Amount -> Change -> Maybe Change
+makeChangeAcc2 tl 0 hand = Just hand
+makeChangeAcc2 [] amt hand = Nothing
+makeChangeAcc2 (coin : tl) amt hand
+  | coin > amt = makeChangeAcc2 tl amt hand
+  | otherwise  = case makeChangeAcc2 tl (amt - coin) (coin : hand) of
+                      Just x -> Just x
+                      Nothing -> (makeChangeAcc2 tl amt hand)
 
 
 -- TEST makeChange
