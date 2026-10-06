@@ -1,4 +1,6 @@
 {-# OPTIONS_GHC -fwarn-incomplete-patterns #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+
 module Week02Live where
 
 import Data.Maybe
@@ -16,7 +18,16 @@ import Test.QuickCheck
 -- DEFINE Change
 
 type Coin = Amount
-type Amount = Int
+newtype Amount = MkAmount { getAmount :: Int }
+-- Amounts should be >= 0
+  deriving (Eq, Ord, Enum, Num)
+
+instance Show Amount where
+  show amt = show (getAmount amt)
+
+instance Arbitrary Amount where
+  arbitrary = fmap (MkAmount . abs) arbitrary
+
 type Change = [Coin]
 type Till = [Coin]
 
@@ -60,6 +71,20 @@ prop_VC :: Till -> Amount -> Property
 prop_VC tl amnt =
   let mchng = makeChange tl amnt in
   isJust mchng ==> testVC tl amnt
+
+-- Better test
+
+allSubsets :: [a] -> [[a]]
+allSubsets [] = [[]]
+allSubsets (hd : tl) =
+  let ih = allSubsets tl in
+  map (\ subset -> hd : subset) ih ++ ih
+
+prop_VC2 :: Till -> Amount -> Property
+prop_VC2 tl amnt =
+  let subsets = allSubsets tl in
+  any (\ subTill -> changeAmount subTill == amnt) subsets
+  ==> testVC tl amnt
 
 -- DEFINE makeChange
 makeChange :: Till -> Amount -> Maybe Change
