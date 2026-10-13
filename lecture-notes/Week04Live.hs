@@ -13,31 +13,53 @@ import Test.QuickCheck
 -- Foldr
 
 -- DEFINE sum
--- sum :: [Int] -> Int
+sum :: [Int] -> Int
+sum []     = 0
+sum (x:xs) = x + sum xs
 
 -- DEFINE append
--- append :: [a] -> [a] -> [a]
+append :: [a] -> [a] -> [a]
+append []     ys = ys
+append (x:xs) ys = x:(append xs ys)
+
 
 -- DEFINE concat
--- concat :: [[a]] -> [a]
-
+concat :: [[a]] -> [a]
+concat []       = []
+concat (xs:xss) = xs ++ (concat xss)
 
 -- They all share a similar structure,
 -- DEFINE foldrList
-
-
-
-
--- DISCUSS symbolic execution
-
--- OBSERVE behaviour via
--- foldrTracing :: Show a => [a] -> String
--- foldrTracing = foldrList "base" (\ x str -> show x ++ " `step` (" ++ str ++ ")")
+foldrList :: (a -> b -> b) -> b -> [a] -> b
+foldrList c n [] = n
+foldrList c n (x:xs) = x `c` (foldrList c n xs)
 
 -- DEFINE sum'
 -- DEFINE append'
 -- DEFINE concat'
 
+sum'          = foldrList (+) 0
+append' xs ys = foldrList (:) ys xs
+concat'       = foldrList (++) []
+
+-- DISCUSS symbolic execution
+
+-- OBSERVE behaviour via
+foldrTracing :: Show a => [a] -> String
+foldrTracing = foldrList (\ x str -> show x ++ " `c` (" ++ str ++ ")") "n"
+
+-- [1,2,3]
+-- 1  :  (2  :  (3  :   []))
+-- 1 `c` (2 `c` (3 `c` (n)))
+--foldrList :: (a -> b -> b) -> b -> [a] -> b
+myMap :: (a -> b) -> [a] -> [b]
+myMap f xs = foldrList (\head acc -> (f head) : acc) [] xs
+
+-- Foldr helps us structure our code and automatically
+-- benefit from universal laws.
+
+-- What is `foldr c n (xs ++ ys)`?
+-- What is `foldr c n (map f xs)`?
 
 
 
