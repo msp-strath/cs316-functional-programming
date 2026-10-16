@@ -1,4 +1,5 @@
 {-# OPTIONS -fwarn-incomplete-patterns #-}
+{-# LANGUAGE GADTs #-}
 module Week04Live where
 
 import Data.Char (toUpper)
@@ -34,6 +35,18 @@ foldrList :: (a -> b -> b) -> b -> [a] -> b
 foldrList c n [] = n
 foldrList c n (x:xs) = x `c` (foldrList c n xs)
 
+
+
+
+
+
+
+
+
+
+
+
+
 -- DEFINE sum'
 -- DEFINE append'
 -- DEFINE concat'
@@ -49,9 +62,17 @@ foldrTracing :: Show a => [a] -> String
 foldrTracing = foldrList (\ x str -> show x ++ " `c` (" ++ str ++ ")") "n"
 
 -- [1,2,3]
--- 1  :  (2  :  (3  :   []))
+-- 1     :  (2   :  (3   :   []))
 -- 1 `c` (2 `c` (3 `c` (n)))
+
+-- 1     :  (2   :  (3   :   []))
+-- (2*1) :  (2*2 :  (2*3 :   []))
+-- (2*1) `c`(2*2 `c`(2*3 `c` (n)))
+
+
 --foldrList :: (a -> b -> b) -> b -> [a] -> b
+-- map f  (1 : (  2 : (  3 : [])))
+--      (f 1 : (f 2 : (f 3 : [])))
 myMap :: (a -> b) -> [a] -> [b]
 myMap f xs = foldrList (\head acc -> (f head) : acc) [] xs
 
@@ -59,34 +80,85 @@ myMap f xs = foldrList (\head acc -> (f head) : acc) [] xs
 -- benefit from universal laws.
 
 -- What is `foldr c n (xs ++ ys)`?
+
+prop_foldrAppend :: [Int] -> [Int] -> Bool
+prop_foldrAppend xs ys =
+  foldr (-) 0 (xs ++ ys)
+  == foldr (-) (foldr (-) 0 ys) xs
+
 -- What is `foldr c n (map f xs)`?
 
-
+prop_foldrMap :: [Int] -> Bool
+prop_foldrMap xs =
+  foldr (-) 0 (map (2*) xs)
+  == foldr (\ x r -> (2*x) - r) 0 xs
 
 
 ------------------------------------------------------------------------
 -- Generalising fold
 
 -- DEFINE data Natural
--- data Natural
+-- data Natural = Zero | Succ Natural
+data Natural where
+  Zero :: {- no arg -} Natural
+  Succ :: Natural   -> Natural
+  deriving (Show)
 
 -- DEFINE one
--- one :: Natural
+one :: Natural
+one = Succ Zero
 
 -- DEFINE two
--- two :: Natural
+two :: Natural
+two = Succ one
+
+-- foldrList
+--    (:) : a -> [a] -> [a]
+--
+-- :: (a -> b -> b) -- A function taking a head and
+--                  -- an already transformed tail and returning a b
+--
+--    [] : [a]
+-- -> b             -- A b standing for the meaning of []
+--
+-- -> [a] -> b      -- To Transform lists of as in to bs
+
 
 -- DEFINE foldNatural
+foldNatural
+  :: b
+  -> (b -> b)
+  -> Natural -> b
+foldNatural z s Zero = z
+foldNatural z s (Succ n) = s (foldNatural z s n)
 
 
 -- DEFINE add
 -- DEFINE add'
-
+add :: Natural -> Natural -> Natural
+add        m  n  = foldNatural    n  Succ m
+-- append' xs ys = foldrList  (:) ys   |  xs
+--                             ^-------'
 
 -- DISCUSS addition vs. append
 
 ------------------------------------------------------------------------
 -- Foldl
+
+sumLeft :: [Int] -> Int
+sumLeft xs = go 0 xs
+  where
+     go n []     = n
+     go n (x:xs) = go (n+x) xs
+-- go :: Int -> [Int] -> Int
+-- go   Accumulator -> list -> value
+
+foldlist :: b -> (b -> a -> b) -> [a] -> b
+foldlist acc f [] = acc
+foldlist acc f (x:xs) = foldlist (f acc x) f xs
+
+sumLeft' xs = foldlist 0 (+) xs
+
 
 -- REMEMBER sum
 -- DEFINE sumAcc
@@ -97,8 +169,8 @@ myMap f xs = foldrList (\head acc -> (f head) : acc) [] xs
 -- DISCUSS symbolic execution
 
 -- OBSERVE the behaviour using
--- foldltracing :: Show a => [a] -> String
--- foldltracing = foldlList "acc" (\ str x -> "(" ++ str ++ ") `upd` " ++ show x)
+foldltracing :: Show a => [a] -> String
+foldltracing = foldlist "acc" (\ str x -> "(" ++ str ++ ") `upd` " ++ show x)
 
 
 
@@ -111,26 +183,43 @@ myMap f xs = foldrList (\head acc -> (f head) : acc) [] xs
 
 -- DEFINE data Bank
 
--- data Bank
+data Bank = Account Int Int
+ deriving Show
+
 
 
 -- DEFINE Transaction
--- data Transaction
+data Transaction = CreditA Int
+   | CreditB Int
+   | DebitA Int
+   | DebitB Int
+   | TransferAtoB Int
+   | DoNothing
+ deriving Show
+
+
 
 -- DEFINE the semantics of transaction as a Bank-transformer
--- step :: Bank -> Transaction -> Bank
-
+--      b    -> a           -> b
+step :: Bank -> Transaction -> Bank
+step (Account a b) (CreditA money) = Account (a+money) b
+step (Account a b) (CreditB money) = Account a       (b+money)
+step (Account a b) (DebitA x)      = Account (a-x) b
+step (Account a b) (DebitB x)      = Account a     (b -x)
+step (Account a b) (TransferAtoB x)= Account (a-x) (b+x)
+step (Account a b) DoNothing       = Account a b
 
 -- DEFINE an example of a list of transactions
--- dayTransaction :: [Transaction]
-
+dayTransaction :: [Transaction]
+dayTransaction = [CreditA 50, TransferAtoB 12, DoNothing, TransferAtoB 12, CreditA 12]
 
 -- DEFINE an initial bank
--- initialBalance :: Bank
+initialBalance :: Bank
+initialBalance = Account 0 0
 
 
 -- EXPERIMENT with running the transactions
-
+runTransaction = foldlist initialBalance step dayTransaction
 
 
 ------------------------------------------------------------------------------
