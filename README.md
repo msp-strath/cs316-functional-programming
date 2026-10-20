@@ -28,9 +28,7 @@ The notes are Haskell files with interleaved code and commentary. You are encour
 - [Tutorial Problems](lecture-notes/Week01Problems.hs)
 - [Tutorial Solutions](lecture-notes/Week01Solutions.hs)
 
-<!--
 - [Live Lecture code (Tuesday)](lecture-notes/Week01Live.hs)
-- [Live Lecture code (Friday)](lecture-notes/Week01Live2.hs)
 
 ### Week 2
 
@@ -45,7 +43,6 @@ The notes are Haskell files with interleaved code and commentary. You are encour
 - [Tutorial Problems](lecture-notes/Week03Problems.hs)
 - [Tutorial Solutions](lecture-notes/Week03Solutions.hs)
 - [Live Lecture code (Tuesday)](lecture-notes/Week03Live.hs)
-- [Live Lecture code (Friday)](lecture-notes/Week03LiveFri.hs)
 
 ### Week 4
 
@@ -60,6 +57,7 @@ The notes are Haskell files with interleaved code and commentary. You are encour
 - [Tutorial Solutions](lecture-notes/Week05Solutions.hs)
 - [Live Lecture Notes (Tuesday and Friday)](lecture-notes/Week05Live.hs)
 
+<!--
 ### Week 6
 - [Lecture notes](lecture-notes/Week06.hs) : Simulating side-effects: Exceptions, State, and Printing
 - [Tutorial Problems](lecture-notes/Week06Problems.hs)

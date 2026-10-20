@@ -1,5 +1,5 @@
 {-# OPTIONS -fwarn-incomplete-patterns #-}
-{-# LANGUAGE InstanceSigs #-}
+{-# LANGUAGE InstanceSigs, GeneralizedNewtypeDeriving #-}
 module Week05Live where
 
 import Prelude hiding (Semigroup (..), Monoid (..), Foldable (..), Functor (..))
@@ -19,20 +19,13 @@ class MyShow a where
 -- DEFINE case insensitive strings & add Show / Eq instance
 
 
-newtype CaseInsensitiveString = MKCIString String
 
-instance MyShow CaseInsensitiveString where
-   myShow (MKCIString str) = map toUpper str
 
 
 
 -- Type class <~~~~~> interface in Java
 
 -- public class JHGJH implements X, Y, Z
-
--- On Friday:
---  - Monoids -- generalising addition, multiplication, and, or, concatenation, ...
---  - Foldable, Functor
 
 
 -- Semigroups
@@ -42,6 +35,63 @@ class Semigroup m where
 -- associativity - (x <> y) <> z = x <> (y <> z)
 
 -- DEFINE various instances
+newtype Int1 = MkInt1 { getInt1 :: Int }
+  deriving (Show, Eq, Arbitrary)
+instance Semigroup Int1 where
+  MkInt1 x <> MkInt1 y = MkInt1 (x + y)
+instance Monoid Int1 where
+  mempty = MkInt1 0
+
+newtype Int2 = MkInt2 { getInt2 :: Int }
+  deriving (Show, Eq, Arbitrary)
+instance Semigroup Int2 where
+  MkInt2 x <> MkInt2 y = MkInt2 (x * y)
+instance Monoid Int2 where
+  mempty = MkInt2 1
+
+newtype Int4 = MkInt4 { getInt4 :: Int }
+  deriving (Show, Eq, Arbitrary)
+instance Semigroup Int4 where
+  MkInt4 x <> MkInt4 y = MkInt4 0
+-- Not a monoid! We throw away all information!
+
+newtype Int5 = MkInt5 { getInt5 :: Int }
+  deriving (Show, Eq, Arbitrary)
+instance Semigroup Int5 where
+  MkInt5 x <> MkInt5 y = MkInt5 (max x y)
+instance Monoid Int5 where
+  mempty = MkInt5 minBound
+
+newtype Int6 = MkInt6 { getInt6 :: Int }
+  deriving (Show, Eq, Arbitrary)
+instance Semigroup Int6 where
+  MkInt6 x <> MkInt6 y = MkInt6 (min x y)
+instance Monoid Int6 where
+  mempty = MkInt6 maxBound
+
+newtype Int7 = MkInt7 { getInt7 :: Int }
+  deriving (Show, Eq, Arbitrary)
+instance Semigroup Int7 where
+  MkInt7 x <> MkInt7 y = MkInt7 x
+-- Not a monoid!
+
+newtype Int8 = MkInt8 { getInt8 :: Int }
+  deriving (Show, Eq, Arbitrary)
+instance Semigroup Int8 where
+  MkInt8 x <> MkInt8 y = MkInt8 y
+-- Not a monoid!
+
+-- counter-examples
+
+newtype Int3 = MkInt3 { getInt3 :: Int }
+  deriving (Show, Eq, Arbitrary)
+instance Semigroup Int3 where
+  MkInt3 x <> MkInt3 y = MkInt3 (read (show x ++ show y))
+
+newtype Int9 = MkInt9 { getInt9 :: Int }
+  deriving (Show, Eq, Arbitrary)
+instance Semigroup Int9 where
+  MkInt9 x <> MkInt9 y = MkInt9 (x - y)
 
 
 
@@ -78,6 +128,25 @@ prop_neutral f x =
    && x <> mempty == x
 
 -- EXTEND previous instances (if possible!)
+
+
+-- A small question:
+-- Given  m has a (Semigroup m) structure
+-- Can you define m' that has a (Monoid m') structure?
+
+newtype First a = MkFirst { getFirst :: Maybe a }
+
+instance Semigroup (First a) where
+  MkFirst Nothing <> y = y
+  x <> _ = x
+
+instace Monoid (First a) where
+  mempty = MkFirst Nothing
+
+
+
+
+
 
 
 
