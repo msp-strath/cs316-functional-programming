@@ -2,25 +2,14 @@
 {-# LANGUAGE InstanceSigs, GeneralizedNewtypeDeriving #-}
 module Week05Live where
 
-import Prelude hiding (Semigroup (..), Monoid (..), Foldable (..), Functor (..))
+import Prelude hiding ({-Semigroup (..), Monoid (..), -}Foldable (..), Functor (..))
 import Data.Char
 
+-- import Data.Set (Set, empty, singleton)
 import Test.QuickCheck
 
 ------------------------------------------------------------------------
 -- Type Classes I: Eq, Show, Algebraic structures
-
-
--- DEFINE MyShow
-
-class MyShow a where
-   myShow :: a -> String
-
--- DEFINE case insensitive strings & add Show / Eq instance
-
-
-
-
 
 
 -- Type class <~~~~~> interface in Java
@@ -29,8 +18,8 @@ class MyShow a where
 
 
 -- Semigroups
-class Semigroup m where
-  (<>) :: m -> m -> m
+-- class Semigroup m where
+  --(<>) :: m -> m -> m
 -- DISCUSS laws
 -- associativity - (x <> y) <> z = x <> (y <> z)
 
@@ -114,8 +103,8 @@ prop_associative f x y z = x <> (y <> z) == (x <> y) <> z
 
 
 -- Monoids
-class Semigroup m => Monoid m where
-  mempty :: m
+--class Semigroup m => Monoid m where
+ -- mempty :: m
 -- DISCUSS laws
 -- DEFINE property tests
 
@@ -130,24 +119,30 @@ prop_neutral f x =
 -- EXTEND previous instances (if possible!)
 
 
--- A small question:
--- Given  m has a (Semigroup m) structure
--- Can you define m' that has a (Monoid m') structure?
-
 newtype First a = MkFirst { getFirst :: Maybe a }
+  deriving (Show)
 
 instance Semigroup (First a) where
   MkFirst Nothing <> y = y
   x <> _ = x
 
-instace Monoid (First a) where
+instance Monoid (First a) where
   mempty = MkFirst Nothing
 
+-- A small question:
+-- Given  m has a (Semigroup m) structure
+-- Can you define m' that has a (Monoid m') structure?
 
+newtype Free m = MkFree { getFree :: Maybe m }
 
+instance Semigroup m => Semigroup (Free m) where
+  MkFree Nothing <> y = y
+  x <> MkFree Nothing = x
+  MkFree (Just x) <> {- at Free m -} MkFree (Just y)
+    = MkFree (Just (x <> {- at m -} y))
 
-
-
+instance Semigroup m => Monoid (Free m) where
+  mempty = MkFree Nothing
 
 
 
@@ -158,14 +153,14 @@ instace Monoid (First a) where
 
 -- DEFINE foldList
 foldList :: Monoid m => [m] -> m
-foldList = undefined
+foldList []     = mempty
+foldList (x:xs) = x <> (foldList xs)
 
-{-
 prop_foldList :: (Eq m, Monoid m)
   => (Int -> m)
   -> [m] -> [m] -> Bool
 prop_foldList f xs ys = foldList (xs <> ys) == foldList xs <> foldList ys
--}
+
 
 -- DEFINE First Monoid
 
@@ -181,15 +176,43 @@ prop_foldList f xs ys = foldList (xs <> ys) == foldList xs <> foldList ys
 
 class Foldable t where
   fold :: Monoid m => t m -> m
-
+--                   [m] BTree m
 -- Formula
+data Formula a = Atom a
+               | IsTrue
+               | And (Formula a) (Formula a)
+               | Or  (Formula a) (Formula a)
 
+instance Foldable Formula where
+  fold (Atom x) = x
+  fold  IsTrue  = mempty
+  fold (And l r) = fold l <> fold r
+  fold (Or l r ) = fold l <> fold r
 -- DEFINE various instances
 
--- DEFINE Functor
+exFormula :: Formula Int
+exFormula =
+  And (Or (Atom 1) (Atom 0))
+      (And (Atom 1) (Atom 2))
 
+
+isEven :: Int -> First Int
+isEven n
+  | n `mod` 2 == 0 = MkFirst (Just n)
+  | otherwise = mempty
+
+
+-- DEFINE Functor
+-- map
 class Functor f where
   fmap :: (a -> b) -> (f a -> f b)
+
+
+instance Functor Formula where
+  fmap f (Atom x)  = Atom (f x)
+  fmap _ IsTrue    = IsTrue
+  fmap f (And l r) = And (fmap f l) (fmap f r)
+  fmap f (Or l r)  = Or (fmap f l) (fmap f r)
 
   -- laws:
 prop_IdentityLaw :: (Eq (f a), Functor f) => (Int -> f Int) -> f a -> Bool
