@@ -124,4 +124,16 @@ exampleTreeTree =
        (Leaf (5, fmap (fmap reverse) exampleTree))
 
 
+
+
+
+
+
+-- DISCUSS e.g.
+-- indented :: Int -> Print a -> Print a
+
+
+
+
+
 -- I/O Processes
