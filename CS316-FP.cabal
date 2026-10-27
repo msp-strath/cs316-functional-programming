@@ -34,10 +34,10 @@ library
                  , Week05Problems
                  , Week05Solutions
                  , Week05Live
-                -- , Week06
-                -- , Week06Problems
-                -- , Week06Solutions
-                -- , Week06Live
+                 , Week06
+                 , Week06Problems
+                 , Week06Solutions
+                 , Week06Live
                 -- , Week07
                 -- , Week07Problems
                 -- , Week07Solutions
