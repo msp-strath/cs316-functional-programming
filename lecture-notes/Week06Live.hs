@@ -101,7 +101,11 @@ findPrint k (Leaf (key, v))
      say "Going back up :(" `andTHEN` \ _ ->
      failure
 findPrint k (Node l r) =
-  findPrint k l `orELSE` findPrint k r
+  (say "Going Left" `andTHEN` \ _ ->
+    indented 2 $ findPrint k l)
+    `orELSE`
+  (say "Going Right" `andTHEN` \ _ ->
+     indented 2 $ findPrint k r)
 {- With more printing!
 
   (say "Going Left" `andTHEN` \ _ -> findPrint k l)
@@ -125,15 +129,57 @@ exampleTreeTree =
 
 
 
+{-
+--(Int,Int,str)
+myFilter p xs = foldr cons [] xs where
 
-
-
+  -- (\x acc -> if p x then x:acc else acc)
+  cons x acc = if p x then x:acc else acc
+-}
 
 -- DISCUSS e.g.
--- indented :: Int -> Print a -> Print a
 
+indented :: Int -> Print a -> Print a
+indented n (a, ls) = (a, padLWith (replicate n ' ') ls) where
 
+  padLWith :: Semigroup a => a -> [a] -> [a]
+  padLWith padding [] = []
+  padLWith padding (hd:tl) = (padding <> hd) : padLWith padding tl
 
+  -- (1+) is the same as (\ x -> 1+x)
+  -- padLWith padding
+  --  = map (\ x -> padding <> x)
+  --  = map (padding <>)
 
 
 -- I/O Processes
+
+
+type InputOutput a
+  = [String]             -- all of the inputs
+  -> ( Print a           -- printing some outputs
+     , [String])         -- returning the inputs not used
+
+ioSay :: String -> InputOutput ()
+ioSay str = \ inputs -> (((), [str]), inputs)
+
+ioGet :: InputOutput String
+ioGet (line : rest) = ((line, []), rest)
+
+ioSuccess :: a -> InputOutput a
+ioSuccess x = \ lines -> ((x, []), lines)
+
+ioThen :: InputOutput a
+       -> (a -> InputOutput b)
+       -> InputOutput b
+ioThen ioa kb lines0 =
+  let ((a, msg1), lines1) = ioa lines0 in
+  let ((b, msg2), lines2) = kb a lines1 in
+  ((b, msg1 ++ msg2), lines2)
+
+
+echo :: InputOutput ()
+echo = ioGet `ioThen` ioSay
+
+spooky :: (((), [String]), [String])
+spooky = echo ["Boooh", "Coooh"]
