@@ -38,10 +38,10 @@ library
                  , Week06Problems
                  , Week06Solutions
                  , Week06Live
-                -- , Week07
-                -- , Week07Problems
-                -- , Week07Solutions
-                -- , Week07Live
+                 , Week07
+                 , Week07Problems
+                 , Week07Solutions
+                 , Week07Revision
                 -- , Week08
                 -- , Week08Problems
                 -- , Week08Solutions
