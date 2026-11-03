@@ -24,9 +24,11 @@ first test t = getFirst $ foldMap injection t
        then MkFirst (Just x)
        else mempty
 
+-- give me the list of elements in t
 listOf :: Foldable t => t a -> [a]
 listOf = foldMap (\ x -> [x])
 
+-- give me the average of values in t
 average :: Foldable t => t Int -> Int
 average t =
   let is = listOf t in
@@ -38,13 +40,16 @@ instance Semigroup Count where
 instance Monoid Count where
   mempty = MkCount 0
 
+-- give me the average of values in t,
+-- but better thanks to Monoids
 average2 :: Foldable t => t Int -> Int
 average2 t =
   let injection = \ x -> (MkCount x, MkCount 1) in
   let (sum, len) = foldMap injection t in
   getCount sum `div` getCount len
 
-
+-- give me the number of values in t that
+-- satisfy the (a -> Bool) predicate
 count :: Foldable t => (a -> Bool) -> t a -> Int
 count test t = getCount $ foldMap injection t
   where
@@ -54,6 +59,8 @@ count test t = getCount $ foldMap injection t
        then MkCount 1
        else mempty
 
+-- give me all the values in t that
+-- satisfy the (a -> Bool) predicate
 all :: Foldable t => (a -> Bool) -> t a -> [a]
 all test t = foldMap injection t
   where
@@ -63,6 +70,9 @@ all test t = foldMap injection t
        then [x]
        else mempty
 
+-- group the values in t into lists of
+-- values that respectively satisfy
+-- and not satisfy the (a -> Bool) predicate
 partition :: Foldable t => (a -> Bool) -> t a -> ([a], [a])
 partition test t = foldMap injection t
   where
