@@ -1,5 +1,6 @@
 {-# LANGUAGE InstanceSigs #-}
 {-# LANGUAGE RebindableSyntax #-}
+{-# LANGUAGE KindSignatures #-}
 {-# OPTIONS_GHC -fwarn-incomplete-patterns #-}
 module Week07Live where
 
@@ -11,7 +12,7 @@ import Prelude hiding ( Monad (..)
 import Data.Char      (isDigit, digitToInt)
 
 import Data.Monoid
-import Data.Type
+import Data.Kind
 
 {- This is needed due to the RebindableSyntax extension. I'm using this
    extension so the 'do' notation in this file uses my redefined
@@ -149,8 +150,15 @@ get = MkState (\ s0 -> (s0, s0))
 put :: s -> State s ()
 put s1 = MkState (\ s0 -> (s1, ()))
 
+filterM :: Monad m => (a -> m Bool) -> [a] -> m [a]
+filterM p [] = return []
+filterM p (x : xs) = do
+  b <- p x
+  ys <- filterM p xs
+  return (if b then x:ys else ys)
+
 p :: Int -> State Int Bool
 p n = do
   k <- get
-  put (k + 1)
+  () <- put (k + 1)
   return (n > k)

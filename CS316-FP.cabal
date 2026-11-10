@@ -42,11 +42,11 @@ library
                  , Week07Problems
                  , Week07Solutions
                  , Week07Revision
-                -- , Week08
-                -- , Week08Problems
-                -- , Week08Solutions
-                -- , Week08Live2023
-                -- , Week08Live
+                 , Week07Live
+                 , Week08
+                 , Week08Problems
+                 , Week08Solutions
+                 , Week08Live
                 -- , Week09
                 -- , Week09Live2023
                 -- , Week09Live
