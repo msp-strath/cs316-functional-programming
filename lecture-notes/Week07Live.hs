@@ -121,13 +121,6 @@ apply2 mf mx = do
 -- DEFINE filterM :: (a -> Maybe Bool) -> [a] -> Maybe [a]
 -- USING >>= explicitly, do blocks
 
-filterM :: Monad m => (a -> m Bool) -> [a] -> m [a]
-filterM p [] = return []
-filterM p (x : xs) = do
-  b <- p x
-  ys <- filterM p xs
-  return (if b then x:ys else ys)
-
 ------------------------------------------------------------------------
 -- State Monad
 
