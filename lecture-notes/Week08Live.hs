@@ -76,7 +76,63 @@ instance Monoid w => Applicative (Writer w) where
     x <- mx
     return (f x)
 
+
+
 -------------------------------------------------------
 -- TODO: pushing a configuration down
 
 newtype Reader r a = MkReader { runReader :: r -> a }
+
+
+
+
+
+-------------------------------------------------------
+-- Parser combinators
+
+-- Parse, don't validate
+-- https://lexi-lambda.github.io/blog/2019/11/05/parse-don-t-validate/
+
+
+-- If we can get input, how do we take it apart?
+type Parser_V1 a = String -> Maybe a
+
+
+-- DEFINE
+-- boolean_V1 :: Parser_V1 Bool
+
+
+-- DEFINE
+-- orElse :: Parser_V1 a -> Parser_V1 a -> Parser_V1 a
+-- disj :: Parser_V1 a -> Parser_V1 b -> Parser_V1 (Either a b)
+
+
+-- DISCUSS limitations
+
+
+
+-- DEFINE Parser
+
+-- DEFINE
+-- parse :: Parser a -> String -> Maybe a
+
+
+-- DEFINE
+-- orElse :: Parser a -> Parser a -> Parser a
+
+
+-- DEFINE
+-- disj :: Parser l -> Parser r -> Parser (Either l r)
+
+-- DEFINE
+-- boolean :: Parser Bool
+-- (via failure, char, expect, string, etc.)
+
+
+-- DEFINE many (0+), some (1+)
+
+-- DEFINE pbetween, pwhitespace, ptoken, pparens, ppair
+
+
+
+-- DEFINE pSepBy, plist, ptuple
