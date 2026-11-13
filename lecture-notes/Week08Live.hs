@@ -1,3 +1,5 @@
+{-# LANGUAGE DeriveFunctor #-}
+
 module Week08Live where
 
 import Control.Monad
@@ -99,40 +101,112 @@ type Parser_V1 a = String -> Maybe a
 
 
 -- DEFINE
--- boolean_V1 :: Parser_V1 Bool
+boolean_V1 :: Parser_V1 Bool
+boolean_V1 "True" = Just True
+boolean_V1 "False" = Just False
+boolean_V1  _      = Nothing
 
+unit_V1 :: Parser_V1 ()
+unit_V1 "()" = Just ()
+unit_V1 _ = Nothing
+
+orElseMaybe :: Maybe a -> Maybe a -> Maybe a
+orElseMaybe (Just x) _ = Just x
+orElseMaybe Nothing x  = x
 
 -- DEFINE
--- orElse :: Parser_V1 a -> Parser_V1 a -> Parser_V1 a
--- disj :: Parser_V1 a -> Parser_V1 b -> Parser_V1 (Either a b)
+orElse_V1 :: Parser_V1 a -> Parser_V1 a -> Parser_V1 a
+orElse_V1 p1 p2 = (\str -> p1 str `orElseMaybe` p2 str)
 
+disj_V1 :: Parser_V1 a -> Parser_V1 b -> Parser_V1 (Either a b)
+disj_V1 p1 p2 = (fmap Left . p1) `orElse_V1` (fmap Right . p2)
 
 -- DISCUSS limitations
 
-
+newtype Parser a
+  = MkParser
+  { runParser :: String -> Maybe (a, String) }
+  deriving (Functor)
 
 -- DEFINE Parser
 
 -- DEFINE
--- parse :: Parser a -> String -> Maybe a
+parse :: Parser a -> Parser_V1 a
+parse (MkParser p) str = do
+  (v, str) <- p str
+  if null str then Just v else Nothing
 
+punit :: Parser ()
+punit = MkParser $ \ str -> case str of
+  '(':')':str -> Just ((), str)
+  _ -> Nothing
 
 -- DEFINE
--- orElse :: Parser a -> Parser a -> Parser a
-
+orElse :: Parser a -> Parser a -> Parser a
+orElse (MkParser p) (MkParser q) = MkParser $ \ str ->
+  (p str) `orElseMaybe` (q str)
 
 -- DEFINE
--- disj :: Parser l -> Parser r -> Parser (Either l r)
+disj :: Parser l -> Parser r -> Parser (Either l r)
+disj p q = fmap Left p `orElse` fmap Right q
 
 -- DEFINE
 -- boolean :: Parser Bool
 -- (via failure, char, expect, string, etc.)
 
+failure :: Parser a
+failure = MkParser $ \ str -> Nothing
+
+pChar :: Parser Char
+pChar = MkParser $ \ str -> case str of
+  c:str -> Just (c, str)
+  _ -> Nothing
+
+instance Monad Parser where
+  return x = MkParser (\ str -> Just (x, str))
+  MkParser p >>= k = MkParser $ \ str0 -> do
+    (v, str1) <- p str0
+    runParser (k v) str1
+
+instance Applicative Parser where
+  pure = return
+  (<*>) = ap
+
+pexpect :: Char -> Parser ()
+pexpect c = do
+  c' <- pChar
+  if c == c' then return () else failure
+
+pstring :: String -> Parser ()
+pstring str = forM_ str pexpect
+
+pboolean :: Parser Bool
+pboolean =
+  fmap (\ () -> True) (pstring "True")
+  `orElse`
+  fmap (\ () -> False) (pstring "False")
 
 -- DEFINE many (0+), some (1+)
 
+many :: Parser a -> Parser [a]
+many p = some p `orElse` return []
+
+some :: Parser a -> Parser [a]
+some p = do
+  x <- p
+  xs <- many p
+  return (x : xs)
+
 -- DEFINE pbetween, pwhitespace, ptoken, pparens, ppair
 
+pbetween
+  :: (Parser (), Parser ())
+  -> Parser a -> Parser a
+pbetween (l, r) m = do
+  l
+  x <- m
+  r
+  return x
 
 
 -- DEFINE pSepBy, plist, ptuple
