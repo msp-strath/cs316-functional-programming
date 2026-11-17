@@ -47,8 +47,7 @@ library
                  , Week08Problems
                  , Week08Solutions
                  , Week08Live
-                -- , Week09
-                -- , Week09Live2023
+                 , Week09
                 -- , Week09Live
                 -- , Week10
                 -- , Week10Live
