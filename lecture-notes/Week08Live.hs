@@ -5,6 +5,8 @@ module Week08Live where
 import Control.Monad
 import Control.Monad.State
 
+import Data.Char
+
 -------------------------------------------------------
 -- Feeding various predicates to filterM
 
@@ -209,4 +211,77 @@ pbetween (l, r) m = do
   return x
 
 
+
+
 -- DEFINE pSepBy, plist, ptuple
+
+pSepBy
+  :: Parser () -- separator
+  -> Parser a  -- value
+  -> Parser [a]
+pSepBy psep pa =
+  (do x <- pa
+      xs <- many $ do
+              psep
+              pa
+      return (x:xs)
+  ) `orElse` return []
+
+whitespace :: Parser ()
+whitespace = void $ many (pexpect ' ')
+
+plist :: Parser a -> Parser [a]
+plist pa
+  = pbetween (pexpect '[', do whitespace; pexpect ']')
+  $ pSepBy (do whitespace; pexpect ',') (do whitespace; pa)
+
+ptuple :: Parser a -> Parser [a]
+ptuple pa
+  = pbetween (pexpect '(', do whitespace; pexpect ')')
+  $ pSepBy (do whitespace; pexpect ',') (do whitespace; pa)
+
+
+data Formula
+  = ABool Bool
+  | AVar String
+  | And Formula Formula
+  | Or Formula Formula
+  deriving Show
+
+-- "True" -> ABool True
+-- "x" -> AVar "x"
+-- "p & q" -> And p q
+-- "p | q" -> Or p q
+-- "(p)" -> p
+-- "p&q|r" -> Or (And p q) r
+-- "p&(q|r)" -> And p (Or q r)
+
+porFormula :: Parser Formula
+porFormula = do
+  fs <- pSepBy
+    (do whitespace; pexpect '|')
+    (do whitespace; pandFormula)
+  case fs of
+    [] -> failure
+    _ -> return (foldr1 Or fs) -- return (foldr Or False fs)
+
+pandFormula :: Parser Formula
+pandFormula = do
+  fs <- pSepBy
+    (do whitespace; pexpect '&')
+    (do whitespace; pbaseFormula)
+  case fs of
+    [] -> failure
+    _ -> return (foldr1 And fs)
+
+-- True&x  &  p& q
+
+pbaseFormula :: Parser Formula
+pbaseFormula = do
+  fmap ABool pboolean
+  `orElse`
+    fmap AVar (some (do x <- pChar; if isAlphaNum x then return x else failure))
+  `orElse`
+    pbetween ( do pexpect '('; whitespace
+             , do whitespace; pexpect ')')
+             porFormula
