@@ -10,6 +10,26 @@ import qualified Network.HTTP as HTTP
 import Week08 (Parser, runParser, JSON (..), parseJSON)
 
 
+
+
+
+
+-- ADMIN:
+-- EPSRC Paid Vacation Internships 2027
+-- Projects are 10 weeks long and distinct from the normal
+-- UG degree courses
+--
+-- If you are interested contact us so we can discuss a project.
+-- Note this is a competitive process
+
+
+
+
+
+
+
+
+
 {-    WEEK 09 : DATA DEPENDENCIES and APPLICATIVE FUNCTORS -}
 
 {- Part 9.1 : Sequences of Actions -}
