@@ -48,7 +48,7 @@ library
                  , Week08Solutions
                  , Week08Live
                  , Week09
-                -- , Week09Live
+                 , Week09Live
                 -- , Week10
                 -- , Week10Live
  -- , ghc-options:         -fwarn-incomplete-patterns
