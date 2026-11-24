@@ -1,17 +1,22 @@
 {-# LANGUAGE InstanceSigs, DataKinds, GADTs, StandaloneDeriving, RankNTypes #-}
+{-# LANGUAGE DeriveFunctor #-}
+{-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE DeriveFoldable #-}
 {-# OPTIONS_GHC -fwarn-incomplete-patterns #-}
 module Week09Live where
 
 import Control.Concurrent (forkIO, MVar, newEmptyMVar, putMVar, takeMVar)
 import Prelude hiding (mapM)
 import Data.Kind (Type)
+import Data.Functor
 import Data.Traversable   (for, fmapDefault, foldMapDefault)
 import qualified Network.HTTP as HTTP
 import Week08 (Parser, runParser, JSON (..), parseJSON)
 
 
 
-
+import Control.Concurrent
+import Control.Concurrent.MVar
 
 
 -- ADMIN:
@@ -105,7 +110,12 @@ newtype Response = MkResponse { getResponse :: String }
 data Batch a
   = One a
   | Both (Batch a) (Batch a)
- deriving (Show)
+ deriving (Show, Functor, Foldable)
+
+instance Traversable Batch where
+  -- traverse :: Monad m => (a -> m b) -> Batch a -> m (Batch b)
+  traverse f (One a)    = pure One  <*> f a
+  traverse f (Both l r) = pure Both <*> traverse f l <*> traverse f r
 
 -- DEFINE Show instance (to the best of our ability)
 data Fetch a
@@ -147,14 +157,89 @@ example = pure (,)
   <*> makeRequest (MkRequest "https://classes.myplace.strath.ac.uk")
 
 -- DEFINE runFetch
--- runFect
---  :: Monad m
---  => (Batch Request -> m (Batch Response))
---  -> Fetch a -> m a
+runFetch
+ :: Monad m
+ => (Batch Request -> m (Batch Response))
+ -> Fetch a -> m a
+runFetch brrr (Pure a) = pure a
+runFetch brrr (Ask rs k) = do
+  as <- brrr rs
+  runFetch brrr (k as)
 
 
 -- DEFINE
--- runFetchIO
---   :: (Request -> IO Response)
---   -> Fetch a
---   -> IO a
+runFetchIO
+  :: (Request -> IO Response)
+  -> Fetch a
+  -> IO a
+runFetchIO br = runFetch (traverse br)
+
+liar :: Request -> IO Response
+liar r = do
+  putStrLn ("Sending the request to: " ++ getRequest r)
+  putStrLn ("I got the answer!")
+  pure (MkResponse "Hi")
+
+type Logger = MVar (Maybe String)
+
+withLogger :: (Logger -> IO a) -> IO a
+withLogger k = do
+  v <- newEmptyMVar
+  tid <- forkIO (logger v)
+  x <- k v
+  putMVar v Nothing
+  return x
+
+  where
+
+  logger :: Logger -> IO ()
+  logger v = takeMVar v >>= \case
+    Nothing -> pure ()
+    Just msg -> do putStrLn msg; logger v
+
+
+
+oops :: IO ()
+oops = do
+  forkIO (putStrLn "Hello world, this is a long message");
+  putStrLn "I wonder what this other guy is saying"
+
+scenario :: Logger -> IO ()
+scenario log = do forkIO hello; wonderer where
+
+  hello :: IO ()
+  hello = logging "Hello world, this is a long message"
+
+  wonderer :: IO ()
+  wonderer = logging "I wonder what this other guy is saying"
+
+  logging :: String -> IO ()
+  logging msg = putMVar log (Just msg)
+
+goAway :: IO a -> IO (MVar a)
+goAway io = do
+  v <- newEmptyMVar
+  forkIO (io >>= putMVar v)
+  return v
+
+comeBack :: MVar a -> IO a
+comeBack = takeMVar
+
+
+runFetchC :: (Request -> IO Response)
+          -> Fetch a -> IO a
+runFetchC br = runFetch $ \ rs -> do
+  ms {- :: Batch (MVar Response) -} <- traverse (goAway . br) rs
+  traverse comeBack ms
+
+scenario2 :: Logger -> IO ()
+scenario2 log = void $ runFetchC liar2 example where
+
+  logging :: String -> IO ()
+  logging msg = putMVar log (Just msg)
+
+  liar2 :: Request -> IO Response
+  liar2 r = do
+    logging ("Sending the request to: " ++ getRequest r)
+    logging ("I got the answer!")
+    pure (MkResponse "Hi")
